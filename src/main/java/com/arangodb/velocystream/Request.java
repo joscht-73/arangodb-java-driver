@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.arangodb.velocypack.VPackSlice;
-import com.arangodb.velocypack.annotations.Expose;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * @author Mark Vollmary
@@ -39,7 +39,7 @@ public class Request {
 	private final String request;
 	private final Map<String, String> queryParam;
 	private final Map<String, String> headerParam;
-	@Expose(serialize = false)
+	@JsonIgnore
 	private VPackSlice body;
 
 	public Request(final String database, final RequestType requestType, final String path) {
@@ -48,8 +48,8 @@ public class Request {
 		this.requestType = requestType;
 		this.request = path;
 		body = null;
-		queryParam = new HashMap<String, String>();
-		headerParam = new HashMap<String, String>();
+		queryParam = new HashMap<>();
+		headerParam = new HashMap<>();
 	}
 
 	public int getVersion() {

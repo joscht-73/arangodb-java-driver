@@ -154,11 +154,11 @@ public class ArangoVertexCollectionTest extends BaseTest {
 	@Test
 	public void replaceVertex() {
 		final BaseDocument doc = new BaseDocument();
-		doc.addAttribute("a", "test");
+		doc.put("a", "test");
 		final VertexEntity createResult = db.graph(GRAPH_NAME).vertexCollection(COLLECTION_NAME).insertVertex(doc,
 			null);
 		doc.getProperties().clear();
-		doc.addAttribute("b", "test");
+		doc.put("b", "test");
 		final VertexUpdateEntity replaceResult = db.graph(GRAPH_NAME).vertexCollection(COLLECTION_NAME)
 				.replaceVertex(createResult.getKey(), doc, null);
 		assertThat(replaceResult, is(notNullValue()));
@@ -171,8 +171,8 @@ public class ArangoVertexCollectionTest extends BaseTest {
 		assertThat(readResult.getKey(), is(createResult.getKey()));
 		assertThat(readResult.getRevision(), is(replaceResult.getRev()));
 		assertThat(readResult.getProperties().keySet(), not(hasItem("a")));
-		assertThat(readResult.getAttribute("b"), is(notNullValue()));
-		assertThat(String.valueOf(readResult.getAttribute("b")), is("test"));
+		assertThat(readResult.get("b"), is(notNullValue()));
+		assertThat(String.valueOf(readResult.get("b")), is("test"));
 	}
 
 	@Test
@@ -189,11 +189,11 @@ public class ArangoVertexCollectionTest extends BaseTest {
 	@Test
 	public void replaceVertexIfMatch() {
 		final BaseDocument doc = new BaseDocument();
-		doc.addAttribute("a", "test");
+		doc.put("a", "test");
 		final VertexEntity createResult = db.graph(GRAPH_NAME).vertexCollection(COLLECTION_NAME).insertVertex(doc,
 			null);
 		doc.getProperties().clear();
-		doc.addAttribute("b", "test");
+		doc.put("b", "test");
 		final VertexReplaceOptions options = new VertexReplaceOptions().ifMatch(createResult.getRev());
 		final VertexUpdateEntity replaceResult = db.graph(GRAPH_NAME).vertexCollection(COLLECTION_NAME)
 				.replaceVertex(createResult.getKey(), doc, options);
@@ -207,18 +207,18 @@ public class ArangoVertexCollectionTest extends BaseTest {
 		assertThat(readResult.getKey(), is(createResult.getKey()));
 		assertThat(readResult.getRevision(), is(replaceResult.getRev()));
 		assertThat(readResult.getProperties().keySet(), not(hasItem("a")));
-		assertThat(readResult.getAttribute("b"), is(notNullValue()));
-		assertThat(String.valueOf(readResult.getAttribute("b")), is("test"));
+		assertThat(readResult.get("b"), is(notNullValue()));
+		assertThat(String.valueOf(readResult.get("b")), is("test"));
 	}
 
 	@Test
 	public void replaceVertexIfMatchFail() {
 		final BaseDocument doc = new BaseDocument();
-		doc.addAttribute("a", "test");
+		doc.put("a", "test");
 		final VertexEntity createResult = db.graph(GRAPH_NAME).vertexCollection(COLLECTION_NAME).insertVertex(doc,
 			null);
 		doc.getProperties().clear();
-		doc.addAttribute("b", "test");
+		doc.put("b", "test");
 		try {
 			final VertexReplaceOptions options = new VertexReplaceOptions().ifMatch("no");
 			db.graph(GRAPH_NAME).vertexCollection(COLLECTION_NAME).replaceVertex(createResult.getKey(), doc, options);
@@ -230,13 +230,13 @@ public class ArangoVertexCollectionTest extends BaseTest {
 	@Test
 	public void updateVertex() {
 		final BaseDocument doc = new BaseDocument();
-		doc.addAttribute("a", "test");
-		doc.addAttribute("c", "test");
+		doc.put("a", "test");
+		doc.put("c", "test");
 		final VertexEntity createResult = db.graph(GRAPH_NAME).vertexCollection(COLLECTION_NAME).insertVertex(doc,
 			null);
-		doc.updateAttribute("a", "test1");
-		doc.addAttribute("b", "test");
-		doc.updateAttribute("c", null);
+		doc.put("a", "test1");
+		doc.put("b", "test");
+		doc.put("c", null);
 		final VertexUpdateEntity updateResult = db.graph(GRAPH_NAME).vertexCollection(COLLECTION_NAME)
 				.updateVertex(createResult.getKey(), doc, null);
 		assertThat(updateResult, is(notNullValue()));
@@ -247,10 +247,10 @@ public class ArangoVertexCollectionTest extends BaseTest {
 		final BaseDocument readResult = db.graph(GRAPH_NAME).vertexCollection(COLLECTION_NAME)
 				.getVertex(createResult.getKey(), BaseDocument.class, null);
 		assertThat(readResult.getKey(), is(createResult.getKey()));
-		assertThat(readResult.getAttribute("a"), is(notNullValue()));
-		assertThat(String.valueOf(readResult.getAttribute("a")), is("test1"));
-		assertThat(readResult.getAttribute("b"), is(notNullValue()));
-		assertThat(String.valueOf(readResult.getAttribute("b")), is("test"));
+		assertThat(readResult.get("a"), is(notNullValue()));
+		assertThat(String.valueOf(readResult.get("a")), is("test1"));
+		assertThat(readResult.get("b"), is(notNullValue()));
+		assertThat(String.valueOf(readResult.get("b")), is("test"));
 		assertThat(readResult.getRevision(), is(updateResult.getRev()));
 		assertThat(readResult.getProperties().keySet(), hasItem("c"));
 	}
@@ -269,13 +269,13 @@ public class ArangoVertexCollectionTest extends BaseTest {
 	@Test
 	public void updateVertexIfMatch() {
 		final BaseDocument doc = new BaseDocument();
-		doc.addAttribute("a", "test");
-		doc.addAttribute("c", "test");
+		doc.put("a", "test");
+		doc.put("c", "test");
 		final VertexEntity createResult = db.graph(GRAPH_NAME).vertexCollection(COLLECTION_NAME).insertVertex(doc,
 			null);
-		doc.updateAttribute("a", "test1");
-		doc.addAttribute("b", "test");
-		doc.updateAttribute("c", null);
+		doc.put("a", "test1");
+		doc.put("b", "test");
+		doc.put("c", null);
 		final VertexUpdateOptions options = new VertexUpdateOptions().ifMatch(createResult.getRev());
 		final VertexUpdateEntity updateResult = db.graph(GRAPH_NAME).vertexCollection(COLLECTION_NAME)
 				.updateVertex(createResult.getKey(), doc, options);
@@ -287,10 +287,10 @@ public class ArangoVertexCollectionTest extends BaseTest {
 		final BaseDocument readResult = db.graph(GRAPH_NAME).vertexCollection(COLLECTION_NAME)
 				.getVertex(createResult.getKey(), BaseDocument.class, null);
 		assertThat(readResult.getKey(), is(createResult.getKey()));
-		assertThat(readResult.getAttribute("a"), is(notNullValue()));
-		assertThat(String.valueOf(readResult.getAttribute("a")), is("test1"));
-		assertThat(readResult.getAttribute("b"), is(notNullValue()));
-		assertThat(String.valueOf(readResult.getAttribute("b")), is("test"));
+		assertThat(readResult.get("a"), is(notNullValue()));
+		assertThat(String.valueOf(readResult.get("a")), is("test1"));
+		assertThat(readResult.get("b"), is(notNullValue()));
+		assertThat(String.valueOf(readResult.get("b")), is("test"));
 		assertThat(readResult.getRevision(), is(updateResult.getRev()));
 		assertThat(readResult.getProperties().keySet(), hasItem("c"));
 	}
@@ -298,13 +298,13 @@ public class ArangoVertexCollectionTest extends BaseTest {
 	@Test
 	public void updateVertexIfMatchFail() {
 		final BaseDocument doc = new BaseDocument();
-		doc.addAttribute("a", "test");
-		doc.addAttribute("c", "test");
+		doc.put("a", "test");
+		doc.put("c", "test");
 		final VertexEntity createResult = db.graph(GRAPH_NAME).vertexCollection(COLLECTION_NAME).insertVertex(doc,
 			null);
-		doc.updateAttribute("a", "test1");
-		doc.addAttribute("b", "test");
-		doc.updateAttribute("c", null);
+		doc.put("a", "test1");
+		doc.put("b", "test");
+		doc.put("c", null);
 		try {
 			final VertexUpdateOptions options = new VertexUpdateOptions().ifMatch("no");
 			db.graph(GRAPH_NAME).vertexCollection(COLLECTION_NAME).updateVertex(createResult.getKey(), doc, options);
@@ -316,10 +316,10 @@ public class ArangoVertexCollectionTest extends BaseTest {
 	@Test
 	public void updateVertexKeepNullTrue() {
 		final BaseDocument doc = new BaseDocument();
-		doc.addAttribute("a", "test");
+		doc.put("a", "test");
 		final VertexEntity createResult = db.graph(GRAPH_NAME).vertexCollection(COLLECTION_NAME).insertVertex(doc,
 			null);
-		doc.updateAttribute("a", null);
+		doc.put("a", null);
 		final VertexUpdateOptions options = new VertexUpdateOptions().keepNull(true);
 		final VertexUpdateEntity updateResult = db.graph(GRAPH_NAME).vertexCollection(COLLECTION_NAME)
 				.updateVertex(createResult.getKey(), doc, options);
@@ -338,10 +338,10 @@ public class ArangoVertexCollectionTest extends BaseTest {
 	@Test
 	public void updateVertexKeepNullFalse() {
 		final BaseDocument doc = new BaseDocument();
-		doc.addAttribute("a", "test");
+		doc.put("a", "test");
 		final VertexEntity createResult = db.graph(GRAPH_NAME).vertexCollection(COLLECTION_NAME).insertVertex(doc,
 			null);
-		doc.updateAttribute("a", null);
+		doc.put("a", null);
 		final VertexUpdateOptions options = new VertexUpdateOptions().keepNull(false);
 		final VertexUpdateEntity updateResult = db.graph(GRAPH_NAME).vertexCollection(COLLECTION_NAME)
 				.updateVertex(createResult.getKey(), doc, options);

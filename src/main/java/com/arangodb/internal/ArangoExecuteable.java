@@ -24,7 +24,6 @@ import java.io.UnsupportedEncodingException;
 import java.util.Map.Entry;
 
 import com.arangodb.ArangoDBException;
-import com.arangodb.internal.util.ArangoSerializationFactory;
 import com.arangodb.internal.util.ArangoSerializationFactory.Serializer;
 import com.arangodb.internal.util.EncodeUtils;
 import com.arangodb.util.ArangoSerialization;
@@ -40,13 +39,13 @@ public abstract class ArangoExecuteable<E extends ArangoExecutor> {
 	private static final String SLASH = "/";
 
 	protected final E executor;
-	protected final ArangoSerializationFactory util;
+	protected final ArangoSerialization util;
 	protected final ArangoContext context;
 
-	protected ArangoExecuteable(final E executor, final ArangoSerializationFactory util, final ArangoContext context) {
+	protected ArangoExecuteable(final E executor, final ArangoSerialization serializer, final ArangoContext context) {
 		super();
 		this.executor = executor;
-		this.util = util;
+		this.util = serializer;
 		this.context = context;
 	}
 
@@ -55,11 +54,12 @@ public abstract class ArangoExecuteable<E extends ArangoExecutor> {
 	}
 
 	public ArangoSerialization util() {
-		return util.get(Serializer.INTERNAL);
+		return util;
 	}
 
+	@Deprecated
 	public ArangoSerialization util(final Serializer serializer) {
-		return util.get(serializer);
+		return util;
 	}
 
 	protected Request request(final String database, final RequestType requestType, final String... path) {

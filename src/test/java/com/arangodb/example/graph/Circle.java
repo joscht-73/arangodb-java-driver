@@ -20,8 +20,7 @@
 
 package com.arangodb.example.graph;
 
-import com.arangodb.entity.DocumentField;
-import com.arangodb.entity.DocumentField.Type;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @author a-brandt
@@ -29,18 +28,18 @@ import com.arangodb.entity.DocumentField.Type;
  */
 public class Circle {
 
-	@DocumentField(Type.ID)
+	@JsonProperty("_id")
 	private String id;
 
-	@DocumentField(Type.KEY)
+	@JsonProperty("_key")
 	private String key;
 
-	@DocumentField(Type.REV)
+	@JsonProperty("_rev")
 	private String revision;
 
 	private String label;
 
-	public Circle(String key, String label) {
+	public Circle(final String key, final String label) {
 		this.key = key;
 		this.label = label;
 	}
@@ -49,7 +48,7 @@ public class Circle {
 		return id;
 	}
 
-	public void setId(String id) {
+	public void setId(final String id) {
 		this.id = id;
 	}
 
@@ -57,7 +56,7 @@ public class Circle {
 		return key;
 	}
 
-	public void setKey(String key) {
+	public void setKey(final String key) {
 		this.key = key;
 	}
 
@@ -65,7 +64,7 @@ public class Circle {
 		return revision;
 	}
 
-	public void setRevision(String revision) {
+	public void setRevision(final String revision) {
 		this.revision = revision;
 	}
 
@@ -73,7 +72,7 @@ public class Circle {
 		return label;
 	}
 
-	public void setLabel(String label) {
+	public void setLabel(final String label) {
 		this.label = label;
 	}
 

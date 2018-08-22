@@ -20,7 +20,7 @@
 
 package com.arangodb.entity;
 
-import com.arangodb.entity.DocumentField.Type;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @author Mark Vollmary
@@ -28,11 +28,11 @@ import com.arangodb.entity.DocumentField.Type;
  */
 public class DocumentEntity implements Entity {
 
-	@DocumentField(Type.KEY)
+	@JsonProperty("_key")
 	private String key;
-	@DocumentField(Type.ID)
+	@JsonProperty("_id")
 	private String id;
-	@DocumentField(Type.REV)
+	@JsonProperty("_rev")
 	private String rev;
 
 	public DocumentEntity() {

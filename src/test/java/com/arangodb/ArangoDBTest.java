@@ -73,9 +73,7 @@ public class ArangoDBTest {
 		return Arrays.asList(//
 			new ArangoDB.Builder().useProtocol(Protocol.VST), //
 			new ArangoDB.Builder().useProtocol(Protocol.HTTP_JSON), //
-			new ArangoDB.Builder().useProtocol(Protocol.HTTP_VPACK), //
-			new ArangoDB.Builder().useProtocol(Protocol.VST).serializer(new VelocyJack()), //
-			new ArangoDB.Builder().useProtocol(Protocol.HTTP_JSON).serializer(new VelocyJack()) //
+			new ArangoDB.Builder().useProtocol(Protocol.HTTP_VPACK) //
 		);
 	}
 
@@ -206,7 +204,7 @@ public class ArangoDBTest {
 			assertThat(users, is(notNullValue()));
 			assertThat(users.size(), is(initialUsers.size() + 1));
 
-			final List<Matcher<? super String>> matchers = new ArrayList<Matcher<? super String>>(users.size());
+			final List<Matcher<? super String>> matchers = new ArrayList<>(users.size());
 			// Add initial users, including root:
 			for (final UserEntity userEntity : initialUsers) {
 				matchers.add(is(userEntity.getUser()));
@@ -235,7 +233,7 @@ public class ArangoDBTest {
 	@Test
 	public void updateUser() {
 		try {
-			final Map<String, Object> extra = new HashMap<String, Object>();
+			final Map<String, Object> extra = new HashMap<>();
 			extra.put("hund", false);
 			arangoDB.createUser(USER, PW, new UserCreateOptions().extra(extra));
 			extra.put("hund", true);
@@ -257,7 +255,7 @@ public class ArangoDBTest {
 	@Test
 	public void replaceUser() {
 		try {
-			final Map<String, Object> extra = new HashMap<String, Object>();
+			final Map<String, Object> extra = new HashMap<>();
 			extra.put("hund", false);
 			arangoDB.createUser(USER, PW, new UserCreateOptions().extra(extra));
 			extra.remove("hund");

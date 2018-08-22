@@ -26,9 +26,7 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 
-import com.arangodb.internal.velocypack.VPackDriverModule;
-import com.arangodb.velocypack.VPack;
-import com.arangodb.velocypack.VPack.Builder;
+import com.arangodb.VelocyJack;
 import com.arangodb.velocypack.VPackBuilder;
 import com.arangodb.velocypack.VPackSlice;
 import com.arangodb.velocypack.ValueType;
@@ -45,13 +43,11 @@ public class BaseDocumentTest {
 		final BaseDocument entity = new BaseDocument();
 		entity.setKey("test");
 		entity.setRevision("test");
-		entity.addAttribute("a", "a");
+		entity.put("a", "a");
 
-		final Builder builder = new VPack.Builder();
-		builder.registerModule(new VPackDriverModule());
-		final VPack vpacker = builder.build();
+		final VelocyJack velocyJack = new VelocyJack();
 
-		final VPackSlice vpack = vpacker.serialize(entity);
+		final VPackSlice vpack = velocyJack.serialize(entity);
 		assertThat(vpack, is(notNullValue()));
 		assertThat(vpack.isObject(), is(true));
 		assertThat(vpack.size(), is(3));
@@ -79,11 +75,9 @@ public class BaseDocumentTest {
 		builder.add("a", "a");
 		builder.close();
 
-		final VPack.Builder vbuilder = new VPack.Builder();
-		vbuilder.registerModule(new VPackDriverModule());
-		final VPack vpacker = vbuilder.build();
+		final VelocyJack velocyJack = new VelocyJack();
 
-		final BaseDocument entity = vpacker.deserialize(builder.slice(), BaseDocument.class);
+		final BaseDocument entity = velocyJack.deserialize(builder.slice(), BaseDocument.class);
 		assertThat(entity.getId(), is(notNullValue()));
 		assertThat(entity.getId(), is("test/test"));
 		assertThat(entity.getKey(), is(notNullValue()));
@@ -91,7 +85,7 @@ public class BaseDocumentTest {
 		assertThat(entity.getRevision(), is(notNullValue()));
 		assertThat(entity.getRevision(), is("test"));
 		assertThat(entity.getProperties().size(), is(1));
-		assertThat(String.valueOf(entity.getAttribute("a")), is("a"));
+		assertThat(String.valueOf(entity.get("a")), is("a"));
 	}
 
 }

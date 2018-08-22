@@ -30,8 +30,6 @@ import java.util.Map;
 import org.junit.Test;
 
 import com.arangodb.entity.BaseDocument;
-import com.arangodb.entity.DocumentField;
-import com.arangodb.entity.DocumentField.Type;
 
 /**
  * @author Mark Vollmary
@@ -48,10 +46,10 @@ public class DocumentCacheTest {
 		assertThat(doc.getKey(), is(nullValue()));
 		assertThat(doc.getRevision(), is(nullValue()));
 
-		final Map<Type, String> values = new HashMap<DocumentField.Type, String>();
-		values.put(Type.ID, "testId");
-		values.put(Type.KEY, "testKey");
-		values.put(Type.REV, "testRev");
+		final Map<String, String> values = new HashMap<>();
+		values.put("_id", "testId");
+		values.put("_key", "testKey");
+		values.put("_rev", "testRev");
 		cache.setValues(doc, values);
 
 		assertThat(doc.getId(), is("testId"));
@@ -62,12 +60,12 @@ public class DocumentCacheTest {
 	@Test
 	public void setValuesMap() {
 		final DocumentCache cache = new DocumentCache();
-		final Map<String, String> map = new HashMap<String, String>();
+		final Map<String, String> map = new HashMap<>();
 
-		final Map<Type, String> values = new HashMap<DocumentField.Type, String>();
-		values.put(Type.ID, "testId");
-		values.put(Type.KEY, "testKey");
-		values.put(Type.REV, "testRev");
+		final Map<String, String> values = new HashMap<>();
+		values.put("_id", "testId");
+		values.put("_key", "testKey");
+		values.put("_rev", "testRev");
 		cache.setValues(map, values);
 
 		assertThat(map.isEmpty(), is(true));

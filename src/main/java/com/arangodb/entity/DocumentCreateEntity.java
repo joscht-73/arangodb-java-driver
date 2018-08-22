@@ -20,7 +20,7 @@
 
 package com.arangodb.entity;
 
-import com.arangodb.velocypack.annotations.Expose;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * @author Mark Vollmary
@@ -30,9 +30,9 @@ import com.arangodb.velocypack.annotations.Expose;
  */
 public class DocumentCreateEntity<T> extends DocumentEntity {
 
-	@Expose(deserialize = false)
+	@JsonIgnore
 	private T newDocument;
-	@Expose(deserialize = false)
+	@JsonIgnore
 	private T oldDocument;
 
 	public DocumentCreateEntity() {

@@ -45,7 +45,7 @@ public class GetDocumentExample extends ExampleBase {
 	@BeforeClass
 	public static void before() {
 		final BaseDocument value = new BaseDocument();
-		value.addAttribute("foo", "bar");
+		value.put("foo", "bar");
 		final DocumentCreateEntity<BaseDocument> doc = collection.insertDocument(value);
 		key = doc.getKey();
 	}
@@ -61,8 +61,8 @@ public class GetDocumentExample extends ExampleBase {
 	public void getAsBaseDocument() {
 		final BaseDocument doc = collection.getDocument(key, BaseDocument.class);
 		assertThat(doc, is(notNullValue()));
-		assertThat(doc.getAttribute("foo"), is(notNullValue()));
-		assertThat(String.valueOf(doc.getAttribute("foo")), is("bar"));
+		assertThat(doc.get("foo"), is(notNullValue()));
+		assertThat(String.valueOf(doc.get("foo")), is("bar"));
 	}
 
 	@SuppressWarnings("unchecked")

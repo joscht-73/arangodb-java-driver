@@ -774,7 +774,7 @@ public class ArangoDatabaseTest extends BaseTest {
 			db.createCollection(COLLECTION_NAME, null);
 			for (int i = 0; i < 10; i++) {
 				final BaseDocument baseDocument = new BaseDocument();
-				baseDocument.addAttribute("age", 20 + i);
+				baseDocument.put("age", 20 + i);
 				db.collection(COLLECTION_NAME).insertDocument(baseDocument, null);
 			}
 			final Map<String, Object> bindVars = new HashMap<String, Object>();

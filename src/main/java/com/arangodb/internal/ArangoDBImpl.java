@@ -43,8 +43,6 @@ import com.arangodb.internal.net.CommunicationProtocol;
 import com.arangodb.internal.net.HostHandle;
 import com.arangodb.internal.net.HostResolver;
 import com.arangodb.internal.net.HostResolver.EndpointResolver;
-import com.arangodb.internal.util.ArangoSerializationFactory;
-import com.arangodb.internal.util.ArangoSerializationFactory.Serializer;
 import com.arangodb.internal.velocystream.VstCommunicationSync;
 import com.arangodb.internal.velocystream.VstProtocol;
 import com.arangodb.model.LogOptions;
@@ -68,19 +66,18 @@ public class ArangoDBImpl extends InternalArangoDB<ArangoExecutorSync> implement
 	private CommunicationProtocol cp;
 
 	public ArangoDBImpl(final VstCommunicationSync.Builder vstBuilder, final HttpCommunication.Builder httpBuilder,
-		final ArangoSerializationFactory util, final Protocol protocol, final HostResolver hostResolver,
+		final ArangoSerialization serializer, final Protocol protocol, final HostResolver hostResolver,
 		final ArangoContext context) {
-		super(new ArangoExecutorSync(createProtocol(vstBuilder, httpBuilder, util.get(Serializer.INTERNAL), protocol),
-				util, new DocumentCache()), util, context);
+		super(new ArangoExecutorSync(createProtocol(vstBuilder, httpBuilder, serializer, protocol), serializer,
+				new DocumentCache()), serializer, context);
 		cp = createProtocol(new VstCommunicationSync.Builder(vstBuilder).maxConnections(1),
-			new HttpCommunication.Builder(httpBuilder).maxConnections(1), util.get(Serializer.INTERNAL), protocol);
+			new HttpCommunication.Builder(httpBuilder).maxConnections(1), serializer, protocol);
 		hostResolver.init(new EndpointResolver() {
 			@Override
 			public Collection<String> resolve(final boolean closeConnections) throws ArangoDBException {
 				Collection<String> response;
 				try {
-					response = executor.execute(
-						new Request(ArangoRequestParam.SYSTEM, RequestType.GET, PATH_ENDPOINTS),
+					response = executor.execute(new Request(ArangoRequestParam.SYSTEM, RequestType.GET, PATH_ENDPOINTS),
 						new ResponseDeserializer<Collection<String>>() {
 							@Override
 							public Collection<String> deserialize(final Response response) throws VPackException {

@@ -22,8 +22,6 @@ package com.arangodb.internal;
 
 import java.lang.reflect.Type;
 
-import com.arangodb.internal.util.ArangoSerializationFactory;
-import com.arangodb.internal.util.ArangoSerializationFactory.Serializer;
 import com.arangodb.util.ArangoSerialization;
 import com.arangodb.velocypack.exception.VPackException;
 import com.arangodb.velocystream.Response;
@@ -39,12 +37,12 @@ public abstract class ArangoExecutor {
 	}
 
 	private final DocumentCache documentCache;
-	private final ArangoSerialization util;
+	private final ArangoSerialization serializer;
 
-	protected ArangoExecutor(final ArangoSerializationFactory util, final DocumentCache documentCache) {
+	protected ArangoExecutor(final ArangoSerialization serializer, final DocumentCache documentCache) {
 		super();
 		this.documentCache = documentCache;
-		this.util = util.get(Serializer.INTERNAL);
+		this.serializer = serializer;
 	}
 
 	public DocumentCache documentCache() {
@@ -53,7 +51,7 @@ public abstract class ArangoExecutor {
 
 	@SuppressWarnings("unchecked")
 	protected <T> T createResult(final Type type, final Response response) {
-		return (T) ((type != Void.class && response.getBody() != null) ? util.deserialize(response.getBody(), type)
+		return (T) ((type != Void.class && response.getBody() != null) ? serializer.deserialize(response.getBody(), type)
 				: null);
 	}
 

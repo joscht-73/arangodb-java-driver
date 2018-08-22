@@ -782,7 +782,7 @@ public class UserAuthTest {
 					fail(details);
 				}
 				assertThat(details, arangoDBRoot.db(DB_NAME).collection(COLLECTION_NAME)
-						.getDocument("123", BaseDocument.class).getAttribute("test").toString(),
+						.getDocument("123", BaseDocument.class).get("test").toString(),
 					is("test"));
 			} else {
 				try {
@@ -792,7 +792,7 @@ public class UserAuthTest {
 				} catch (final ArangoDBException e) {
 				}
 				assertThat(details, arangoDBRoot.db(DB_NAME).collection(COLLECTION_NAME)
-						.getDocument("123", BaseDocument.class).getAttribute("test"),
+						.getDocument("123", BaseDocument.class).get("test"),
 					is(nullValue()));
 			}
 		} finally {
@@ -818,7 +818,7 @@ public class UserAuthTest {
 					fail(details);
 				}
 				assertThat(details, arangoDBRoot.db(DB_NAME).collection(COLLECTION_NAME)
-						.getDocument("123", BaseDocument.class).getAttribute("test").toString(),
+						.getDocument("123", BaseDocument.class).get("test").toString(),
 					is("test"));
 			} else {
 				try {
@@ -830,7 +830,7 @@ public class UserAuthTest {
 				} catch (final ArangoDBException e) {
 				}
 				assertThat(details, arangoDBRoot.db(DB_NAME).collection(COLLECTION_NAME)
-						.getDocument("123", BaseDocument.class).getAttribute("test"),
+						.getDocument("123", BaseDocument.class).get("test"),
 					is(nullValue()));
 			}
 		} finally {

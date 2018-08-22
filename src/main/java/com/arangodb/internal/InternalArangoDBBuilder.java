@@ -31,6 +31,7 @@ import javax.net.ssl.SSLContext;
 
 import com.arangodb.ArangoDB;
 import com.arangodb.ArangoDBException;
+import com.arangodb.VelocyJack;
 import com.arangodb.entity.LoadBalancingStrategy;
 import com.arangodb.internal.net.ExtendedHostResolver;
 import com.arangodb.internal.net.FallbackHostHandler;
@@ -40,12 +41,9 @@ import com.arangodb.internal.net.HostResolver;
 import com.arangodb.internal.net.RandomHostHandler;
 import com.arangodb.internal.net.RoundRobinHostHandler;
 import com.arangodb.internal.net.SimpleHostResolver;
-import com.arangodb.internal.velocypack.VPackDriverModule;
 import com.arangodb.util.ArangoDeserializer;
 import com.arangodb.util.ArangoSerialization;
 import com.arangodb.util.ArangoSerializer;
-import com.arangodb.velocypack.VPack;
-import com.arangodb.velocypack.VPackParser;
 
 /**
  * @author Mark Vollmary
@@ -77,8 +75,6 @@ public abstract class InternalArangoDBBuilder {
 	protected Integer chunksize;
 	protected Integer maxConnections;
 	protected Long connectionTtl;
-	protected final VPack.Builder vpackBuilder;
-	protected final VPackParser.Builder vpackParserBuilder;
 	protected ArangoSerializer serializer;
 	protected ArangoDeserializer deserializer;
 	protected Boolean acquireHostList;
@@ -87,14 +83,11 @@ public abstract class InternalArangoDBBuilder {
 
 	public InternalArangoDBBuilder() {
 		super();
-		vpackBuilder = new VPack.Builder();
-		vpackParserBuilder = new VPackParser.Builder();
-		vpackBuilder.registerModule(new VPackDriverModule());
-		vpackParserBuilder.registerModule(new VPackDriverModule());
 		host = new Host(ArangoDefaults.DEFAULT_HOST, ArangoDefaults.DEFAULT_PORT);
 		hosts = new ArrayList<Host>();
 		user = ArangoDefaults.DEFAULT_USER;
 		loadProperties(ArangoDB.class.getResourceAsStream(DEFAULT_PROPERTY_FILE));
+		customSerializer = new VelocyJack();
 	}
 
 	public InternalArangoDBBuilder loadProperties(final InputStream in) throws ArangoDBException {

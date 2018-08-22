@@ -177,10 +177,10 @@ public class ArangoEdgeCollectionTest extends BaseTest {
 	@Test
 	public void replaceEdge() {
 		final BaseEdgeDocument doc = createEdgeValue();
-		doc.addAttribute("a", "test");
+		doc.put("a", "test");
 		final EdgeEntity createResult = db.graph(GRAPH_NAME).edgeCollection(EDGE_COLLECTION_NAME).insertEdge(doc, null);
 		doc.getProperties().clear();
-		doc.addAttribute("b", "test");
+		doc.put("b", "test");
 		final EdgeUpdateEntity replaceResult = db.graph(GRAPH_NAME).edgeCollection(EDGE_COLLECTION_NAME)
 				.replaceEdge(createResult.getKey(), doc, null);
 		assertThat(replaceResult, is(notNullValue()));
@@ -193,8 +193,8 @@ public class ArangoEdgeCollectionTest extends BaseTest {
 		assertThat(readResult.getKey(), is(createResult.getKey()));
 		assertThat(readResult.getRevision(), is(replaceResult.getRev()));
 		assertThat(readResult.getProperties().keySet(), not(hasItem("a")));
-		assertThat(readResult.getAttribute("b"), is(notNullValue()));
-		assertThat(String.valueOf(readResult.getAttribute("b")), is("test"));
+		assertThat(readResult.get("b"), is(notNullValue()));
+		assertThat(String.valueOf(readResult.get("b")), is("test"));
 	}
 
 	@Test
@@ -210,10 +210,10 @@ public class ArangoEdgeCollectionTest extends BaseTest {
 	@Test
 	public void replaceEdgeIfMatch() {
 		final BaseEdgeDocument doc = createEdgeValue();
-		doc.addAttribute("a", "test");
+		doc.put("a", "test");
 		final EdgeEntity createResult = db.graph(GRAPH_NAME).edgeCollection(EDGE_COLLECTION_NAME).insertEdge(doc, null);
 		doc.getProperties().clear();
-		doc.addAttribute("b", "test");
+		doc.put("b", "test");
 		final EdgeReplaceOptions options = new EdgeReplaceOptions().ifMatch(createResult.getRev());
 		final EdgeUpdateEntity replaceResult = db.graph(GRAPH_NAME).edgeCollection(EDGE_COLLECTION_NAME)
 				.replaceEdge(createResult.getKey(), doc, options);
@@ -227,17 +227,17 @@ public class ArangoEdgeCollectionTest extends BaseTest {
 		assertThat(readResult.getKey(), is(createResult.getKey()));
 		assertThat(readResult.getRevision(), is(replaceResult.getRev()));
 		assertThat(readResult.getProperties().keySet(), not(hasItem("a")));
-		assertThat(readResult.getAttribute("b"), is(notNullValue()));
-		assertThat(String.valueOf(readResult.getAttribute("b")), is("test"));
+		assertThat(readResult.get("b"), is(notNullValue()));
+		assertThat(String.valueOf(readResult.get("b")), is("test"));
 	}
 
 	@Test
 	public void replaceEdgeIfMatchFail() {
 		final BaseEdgeDocument doc = createEdgeValue();
-		doc.addAttribute("a", "test");
+		doc.put("a", "test");
 		final EdgeEntity createResult = db.graph(GRAPH_NAME).edgeCollection(EDGE_COLLECTION_NAME).insertEdge(doc, null);
 		doc.getProperties().clear();
-		doc.addAttribute("b", "test");
+		doc.put("b", "test");
 		try {
 			final EdgeReplaceOptions options = new EdgeReplaceOptions().ifMatch("no");
 			db.graph(GRAPH_NAME).edgeCollection(EDGE_COLLECTION_NAME).replaceEdge(createResult.getKey(), doc, options);
@@ -249,12 +249,12 @@ public class ArangoEdgeCollectionTest extends BaseTest {
 	@Test
 	public void updateEdge() {
 		final BaseEdgeDocument doc = createEdgeValue();
-		doc.addAttribute("a", "test");
-		doc.addAttribute("c", "test");
+		doc.put("a", "test");
+		doc.put("c", "test");
 		final EdgeEntity createResult = db.graph(GRAPH_NAME).edgeCollection(EDGE_COLLECTION_NAME).insertEdge(doc, null);
-		doc.updateAttribute("a", "test1");
-		doc.addAttribute("b", "test");
-		doc.updateAttribute("c", null);
+		doc.put("a", "test1");
+		doc.put("b", "test");
+		doc.put("c", null);
 		final EdgeUpdateEntity updateResult = db.graph(GRAPH_NAME).edgeCollection(EDGE_COLLECTION_NAME)
 				.updateEdge(createResult.getKey(), doc, null);
 		assertThat(updateResult, is(notNullValue()));
@@ -265,10 +265,10 @@ public class ArangoEdgeCollectionTest extends BaseTest {
 		final BaseEdgeDocument readResult = db.graph(GRAPH_NAME).edgeCollection(EDGE_COLLECTION_NAME)
 				.getEdge(createResult.getKey(), BaseEdgeDocument.class, null);
 		assertThat(readResult.getKey(), is(createResult.getKey()));
-		assertThat(readResult.getAttribute("a"), is(notNullValue()));
-		assertThat(String.valueOf(readResult.getAttribute("a")), is("test1"));
-		assertThat(readResult.getAttribute("b"), is(notNullValue()));
-		assertThat(String.valueOf(readResult.getAttribute("b")), is("test"));
+		assertThat(readResult.get("a"), is(notNullValue()));
+		assertThat(String.valueOf(readResult.get("a")), is("test1"));
+		assertThat(readResult.get("b"), is(notNullValue()));
+		assertThat(String.valueOf(readResult.get("b")), is("test"));
 		assertThat(readResult.getRevision(), is(updateResult.getRev()));
 		assertThat(readResult.getProperties().keySet(), hasItem("c"));
 	}
@@ -286,12 +286,12 @@ public class ArangoEdgeCollectionTest extends BaseTest {
 	@Test
 	public void updateEdgeIfMatch() {
 		final BaseEdgeDocument doc = createEdgeValue();
-		doc.addAttribute("a", "test");
-		doc.addAttribute("c", "test");
+		doc.put("a", "test");
+		doc.put("c", "test");
 		final EdgeEntity createResult = db.graph(GRAPH_NAME).edgeCollection(EDGE_COLLECTION_NAME).insertEdge(doc, null);
-		doc.updateAttribute("a", "test1");
-		doc.addAttribute("b", "test");
-		doc.updateAttribute("c", null);
+		doc.put("a", "test1");
+		doc.put("b", "test");
+		doc.put("c", null);
 		final EdgeUpdateOptions options = new EdgeUpdateOptions().ifMatch(createResult.getRev());
 		final EdgeUpdateEntity updateResult = db.graph(GRAPH_NAME).edgeCollection(EDGE_COLLECTION_NAME)
 				.updateEdge(createResult.getKey(), doc, options);
@@ -303,10 +303,10 @@ public class ArangoEdgeCollectionTest extends BaseTest {
 		final BaseEdgeDocument readResult = db.graph(GRAPH_NAME).edgeCollection(EDGE_COLLECTION_NAME)
 				.getEdge(createResult.getKey(), BaseEdgeDocument.class, null);
 		assertThat(readResult.getKey(), is(createResult.getKey()));
-		assertThat(readResult.getAttribute("a"), is(notNullValue()));
-		assertThat(String.valueOf(readResult.getAttribute("a")), is("test1"));
-		assertThat(readResult.getAttribute("b"), is(notNullValue()));
-		assertThat(String.valueOf(readResult.getAttribute("b")), is("test"));
+		assertThat(readResult.get("a"), is(notNullValue()));
+		assertThat(String.valueOf(readResult.get("a")), is("test1"));
+		assertThat(readResult.get("b"), is(notNullValue()));
+		assertThat(String.valueOf(readResult.get("b")), is("test"));
 		assertThat(readResult.getRevision(), is(updateResult.getRev()));
 		assertThat(readResult.getProperties().keySet(), hasItem("c"));
 	}
@@ -314,12 +314,12 @@ public class ArangoEdgeCollectionTest extends BaseTest {
 	@Test
 	public void updateEdgeIfMatchFail() {
 		final BaseEdgeDocument doc = createEdgeValue();
-		doc.addAttribute("a", "test");
-		doc.addAttribute("c", "test");
+		doc.put("a", "test");
+		doc.put("c", "test");
 		final EdgeEntity createResult = db.graph(GRAPH_NAME).edgeCollection(EDGE_COLLECTION_NAME).insertEdge(doc, null);
-		doc.updateAttribute("a", "test1");
-		doc.addAttribute("b", "test");
-		doc.updateAttribute("c", null);
+		doc.put("a", "test1");
+		doc.put("b", "test");
+		doc.put("c", null);
 		try {
 			final EdgeUpdateOptions options = new EdgeUpdateOptions().ifMatch("no");
 			db.graph(GRAPH_NAME).edgeCollection(EDGE_COLLECTION_NAME).updateEdge(createResult.getKey(), doc, options);
@@ -331,9 +331,9 @@ public class ArangoEdgeCollectionTest extends BaseTest {
 	@Test
 	public void updateEdgeKeepNullTrue() {
 		final BaseEdgeDocument doc = createEdgeValue();
-		doc.addAttribute("a", "test");
+		doc.put("a", "test");
 		final EdgeEntity createResult = db.graph(GRAPH_NAME).edgeCollection(EDGE_COLLECTION_NAME).insertEdge(doc, null);
-		doc.updateAttribute("a", null);
+		doc.put("a", null);
 		final EdgeUpdateOptions options = new EdgeUpdateOptions().keepNull(true);
 		final EdgeUpdateEntity updateResult = db.graph(GRAPH_NAME).edgeCollection(EDGE_COLLECTION_NAME)
 				.updateEdge(createResult.getKey(), doc, options);
@@ -352,9 +352,9 @@ public class ArangoEdgeCollectionTest extends BaseTest {
 	@Test
 	public void updateEdgeKeepNullFalse() {
 		final BaseEdgeDocument doc = createEdgeValue();
-		doc.addAttribute("a", "test");
+		doc.put("a", "test");
 		final EdgeEntity createResult = db.graph(GRAPH_NAME).edgeCollection(EDGE_COLLECTION_NAME).insertEdge(doc, null);
-		doc.updateAttribute("a", null);
+		doc.put("a", null);
 		final EdgeUpdateOptions options = new EdgeUpdateOptions().keepNull(false);
 		final EdgeUpdateEntity updateResult = db.graph(GRAPH_NAME).edgeCollection(EDGE_COLLECTION_NAME)
 				.updateEdge(createResult.getKey(), doc, options);

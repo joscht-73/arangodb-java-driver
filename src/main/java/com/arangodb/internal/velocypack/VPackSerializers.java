@@ -20,6 +20,7 @@
 
 package com.arangodb.internal.velocypack;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,7 +29,6 @@ import java.util.Map.Entry;
 import com.arangodb.entity.BaseDocument;
 import com.arangodb.entity.BaseEdgeDocument;
 import com.arangodb.entity.CollectionType;
-import com.arangodb.entity.DocumentField;
 import com.arangodb.entity.LogLevel;
 import com.arangodb.entity.Permissions;
 import com.arangodb.entity.ReplicationFactor;
@@ -41,12 +41,10 @@ import com.arangodb.entity.arangosearch.StoreValuesType;
 import com.arangodb.internal.velocystream.internal.AuthenticationRequest;
 import com.arangodb.model.TraversalOptions;
 import com.arangodb.model.TraversalOptions.Order;
-import com.arangodb.velocypack.VPackBuilder;
-import com.arangodb.velocypack.VPackSerializationContext;
-import com.arangodb.velocypack.VPackSerializer;
-import com.arangodb.velocypack.ValueType;
-import com.arangodb.velocypack.exception.VPackException;
 import com.arangodb.velocystream.Request;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
 
 /**
  * @author Mark Vollmary
@@ -54,271 +52,262 @@ import com.arangodb.velocystream.Request;
  */
 public class VPackSerializers {
 
-	public static final VPackSerializer<Request> REQUEST = new VPackSerializer<Request>() {
+	public static final JsonSerializer<Request> REQUEST = new JsonSerializer<Request>() {
 		@Override
-		public void serialize(
-			final VPackBuilder builder,
-			final String attribute,
-			final Request value,
-			final VPackSerializationContext context) throws VPackException {
-			builder.add(attribute, ValueType.ARRAY);
-			builder.add(value.getVersion());
-			builder.add(value.getType());
-			builder.add(value.getDatabase());
-			builder.add(value.getRequestType().getType());
-			builder.add(value.getRequest());
-			builder.add(ValueType.OBJECT);
+		public void serialize(final Request value, final JsonGenerator gen, final SerializerProvider serializers)
+				throws IOException {
+			gen.writeStartArray();
+			gen.writeNumber(value.getVersion());
+			gen.writeNumber(value.getType());
+			gen.writeString(value.getDatabase());
+			gen.writeNumber(value.getRequestType().getType());
+			gen.writeString(value.getRequest());
+			gen.writeStartObject();
 			for (final Entry<String, String> entry : value.getQueryParam().entrySet()) {
-				builder.add(entry.getKey(), entry.getValue());
+				gen.writeFieldName(entry.getKey());
+				gen.writeString(entry.getValue());
 			}
-			builder.close();
-			builder.add(ValueType.OBJECT);
+			gen.writeEndObject();
+			gen.writeStartObject();
 			for (final Entry<String, String> entry : value.getHeaderParam().entrySet()) {
-				builder.add(entry.getKey(), entry.getValue());
+				gen.writeFieldName(entry.getKey());
+				gen.writeString(entry.getValue());
 			}
-			builder.close();
-			builder.close();
+			gen.writeEndObject();
+			gen.writeEndArray();
 		}
 	};
 
-	public static final VPackSerializer<AuthenticationRequest> AUTH_REQUEST = new VPackSerializer<AuthenticationRequest>() {
+	public static final JsonSerializer<AuthenticationRequest> AUTH_REQUEST = new JsonSerializer<AuthenticationRequest>() {
 		@Override
 		public void serialize(
-			final VPackBuilder builder,
-			final String attribute,
 			final AuthenticationRequest value,
-			final VPackSerializationContext context) throws VPackException {
-			builder.add(attribute, ValueType.ARRAY);
-			builder.add(value.getVersion());
-			builder.add(value.getType());
-			builder.add(value.getEncryption());
-			builder.add(value.getUser());
-			builder.add(value.getPassword());
-			builder.close();
+			final JsonGenerator gen,
+			final SerializerProvider serializers) throws IOException {
+			gen.writeStartArray();
+			gen.writeNumber(value.getVersion());
+			gen.writeNumber(value.getType());
+			gen.writeString(value.getEncryption());
+			gen.writeString(value.getUser());
+			gen.writeString(value.getPassword());
+			gen.writeEndArray();
 		}
 	};
 
-	public static final VPackSerializer<CollectionType> COLLECTION_TYPE = new VPackSerializer<CollectionType>() {
+	public static final JsonSerializer<CollectionType> COLLECTION_TYPE = new JsonSerializer<CollectionType>() {
 		@Override
-		public void serialize(
-			final VPackBuilder builder,
-			final String attribute,
-			final CollectionType value,
-			final VPackSerializationContext context) throws VPackException {
-			builder.add(attribute, value.getType());
+		public void serialize(final CollectionType value, final JsonGenerator gen, final SerializerProvider serializers)
+				throws IOException {
+			gen.writeNumber(value.getType());
 		}
 	};
 
-	public static final VPackSerializer<BaseDocument> BASE_DOCUMENT = new VPackSerializer<BaseDocument>() {
+	public static final JsonSerializer<BaseDocument> BASE_DOCUMENT = new JsonSerializer<BaseDocument>() {
 		@Override
-		public void serialize(
-			final VPackBuilder builder,
-			final String attribute,
-			final BaseDocument value,
-			final VPackSerializationContext context) throws VPackException {
-			final Map<String, Object> doc = new HashMap<String, Object>();
+		public void serialize(final BaseDocument value, final JsonGenerator gen, final SerializerProvider serializers)
+				throws IOException {
+			final Map<String, Object> doc = new HashMap<>();
 			doc.putAll(value.getProperties());
-			doc.put(DocumentField.Type.ID.getSerializeName(), value.getId());
-			doc.put(DocumentField.Type.KEY.getSerializeName(), value.getKey());
-			doc.put(DocumentField.Type.REV.getSerializeName(), value.getRevision());
-			context.serialize(builder, attribute, doc);
+			doc.put("_id", value.getId());
+			doc.put("_key", value.getKey());
+			doc.put("_rev", value.getRevision());
+			gen.writeObject(doc);
 		}
 	};
 
-	public static final VPackSerializer<BaseEdgeDocument> BASE_EDGE_DOCUMENT = new VPackSerializer<BaseEdgeDocument>() {
+	public static final JsonSerializer<BaseEdgeDocument> BASE_EDGE_DOCUMENT = new JsonSerializer<BaseEdgeDocument>() {
 		@Override
 		public void serialize(
-			final VPackBuilder builder,
-			final String attribute,
 			final BaseEdgeDocument value,
-			final VPackSerializationContext context) throws VPackException {
-			final Map<String, Object> doc = new HashMap<String, Object>();
+			final JsonGenerator gen,
+			final SerializerProvider serializers) throws IOException {
+			final Map<String, Object> doc = new HashMap<>();
 			doc.putAll(value.getProperties());
-			doc.put(DocumentField.Type.ID.getSerializeName(), value.getId());
-			doc.put(DocumentField.Type.KEY.getSerializeName(), value.getKey());
-			doc.put(DocumentField.Type.REV.getSerializeName(), value.getRevision());
-			doc.put(DocumentField.Type.FROM.getSerializeName(), value.getFrom());
-			doc.put(DocumentField.Type.TO.getSerializeName(), value.getTo());
-			context.serialize(builder, attribute, doc);
+			doc.put("_id", value.getId());
+			doc.put("_key", value.getKey());
+			doc.put("_rev", value.getRevision());
+			doc.put("_from", value.getFrom());
+			doc.put("_to", value.getTo());
+			gen.writeObject(doc);
 		}
 	};
 
-	public static final VPackSerializer<TraversalOptions.Order> TRAVERSAL_ORDER = new VPackSerializer<TraversalOptions.Order>() {
+	public static final JsonSerializer<TraversalOptions.Order> TRAVERSAL_ORDER = new JsonSerializer<TraversalOptions.Order>() {
 		@Override
-		public void serialize(
-			final VPackBuilder builder,
-			final String attribute,
-			final Order value,
-			final VPackSerializationContext context) throws VPackException {
+		public void serialize(final Order value, final JsonGenerator gen, final SerializerProvider serializers)
+				throws IOException {
 			if (TraversalOptions.Order.preorder_expander == value) {
-				builder.add(attribute, "preorder-expander");
+				gen.writeString("preorder-expander");
 			} else {
-				builder.add(attribute, value.name());
+				gen.writeString(value.name());
 			}
 		}
 	};
 
-	public static final VPackSerializer<LogLevel> LOG_LEVEL = new VPackSerializer<LogLevel>() {
+	public static final JsonSerializer<LogLevel> LOG_LEVEL = new JsonSerializer<LogLevel>() {
 		@Override
-		public void serialize(
-			final VPackBuilder builder,
-			final String attribute,
-			final LogLevel value,
-			final VPackSerializationContext context) throws VPackException {
-			builder.add(attribute, value.getLevel());
+		public void serialize(final LogLevel value, final JsonGenerator gen, final SerializerProvider serializers)
+				throws IOException {
+			gen.writeNumber(value.getLevel());
 		}
 	};
 
-	public static final VPackSerializer<Permissions> PERMISSIONS = new VPackSerializer<Permissions>() {
+	public static final JsonSerializer<Permissions> PERMISSIONS = new JsonSerializer<Permissions>() {
 		@Override
-		public void serialize(
-			final VPackBuilder builder,
-			final String attribute,
-			final Permissions value,
-			final VPackSerializationContext context) throws VPackException {
-			builder.add(attribute, value.toString().toLowerCase());
+		public void serialize(final Permissions value, final JsonGenerator gen, final SerializerProvider serializers)
+				throws IOException {
+			gen.writeString(value.toString().toLowerCase());
 		}
 	};
 
-	public static final VPackSerializer<ReplicationFactor> REPLICATION_FACTOR = new VPackSerializer<ReplicationFactor>() {
+	public static final JsonSerializer<ReplicationFactor> REPLICATION_FACTOR = new JsonSerializer<ReplicationFactor>() {
 		@Override
 		public void serialize(
-			final VPackBuilder builder,
-			final String attribute,
 			final ReplicationFactor value,
-			final VPackSerializationContext context) throws VPackException {
+			final JsonGenerator gen,
+			final SerializerProvider serializers) throws IOException {
 			final Boolean satellite = value.getSatellite();
 			if (Boolean.TRUE == satellite) {
-				builder.add(attribute, "satellite");
+				gen.writeString("satellite");
 			} else if (value.getReplicationFactor() != null) {
-				builder.add(attribute, value.getReplicationFactor());
+				gen.writeNumber(value.getReplicationFactor());
 			}
 		}
 	};
 
-	public static final VPackSerializer<ViewType> VIEW_TYPE = new VPackSerializer<ViewType>() {
+	public static final JsonSerializer<ViewType> VIEW_TYPE = new JsonSerializer<ViewType>() {
 		@Override
-		public void serialize(
-			final VPackBuilder builder,
-			final String attribute,
-			final ViewType value,
-			final VPackSerializationContext context) throws VPackException {
+		public void serialize(final ViewType value, final JsonGenerator gen, final SerializerProvider serializers)
+				throws IOException {
 			final String type = value == ViewType.ARANGO_SEARCH ? "arangosearch" : value.name().toLowerCase();
-			builder.add(attribute, type);
+			gen.writeString(type);
 		}
 	};
 
-	public static final VPackSerializer<ArangoSearchProperties> ARANGO_SEARCH_PROPERTIES = new VPackSerializer<ArangoSearchProperties>() {
+	public static final JsonSerializer<ArangoSearchProperties> ARANGO_SEARCH_PROPERTIES = new JsonSerializer<ArangoSearchProperties>() {
 		@Override
 		public void serialize(
-			final VPackBuilder builder,
-			final String attribute,
 			final ArangoSearchProperties value,
-			final VPackSerializationContext context) throws VPackException {
-			final boolean wrap = !attribute.startsWith("_");
-			if (wrap) {
-				builder.add("properties", ValueType.OBJECT);
-			}
+			final JsonGenerator gen,
+			final SerializerProvider serializers) throws IOException {
 			final String locale = value.getLocale();
 			if (locale != null) {
-				builder.add("locale", locale);
+				gen.writeFieldName("locale");
+				gen.writeString(locale);
 			}
 			final Long commitIntervalMsec = value.getCommitIntervalMsec();
 			final Long cleanupIntervalStep = value.getCleanupIntervalStep();
 			final Collection<ConsolidateThreshold> thresholds = value.getThresholds();
 
 			if (commitIntervalMsec != null || cleanupIntervalStep != null || !thresholds.isEmpty()) {
-				builder.add("commit", ValueType.OBJECT);
+				gen.writeFieldName("commit");
+				gen.writeStartObject();
 				if (commitIntervalMsec != null) {
-					builder.add("commitIntervalMsec", commitIntervalMsec);
+					gen.writeFieldName("commitIntervalMsec");
+					gen.writeNumber(commitIntervalMsec);
 				}
 				if (cleanupIntervalStep != null) {
-					builder.add("cleanupIntervalStep", cleanupIntervalStep);
+					gen.writeFieldName("cleanupIntervalStep");
+					gen.writeNumber(cleanupIntervalStep);
 				}
 				if (!thresholds.isEmpty()) {
-					builder.add("consolidate", ValueType.OBJECT);
+					gen.writeFieldName("consolidate");
+					gen.writeStartObject();
 					for (final ConsolidateThreshold consolidateThreshold : thresholds) {
-						builder.add(consolidateThreshold.getType().name().toLowerCase(), ValueType.OBJECT);
+						gen.writeFieldName(consolidateThreshold.getType().name().toLowerCase());
+						gen.writeStartObject();
 						final Double threshold = consolidateThreshold.getThreshold();
 						if (threshold != null) {
-							builder.add("threshold", threshold);
+							gen.writeFieldName("threshold");
+							gen.writeNumber(threshold);
 						}
 						final Long segmentThreshold = consolidateThreshold.getSegmentThreshold();
 						if (segmentThreshold != null) {
-							builder.add("segmentThreshold", segmentThreshold);
+							gen.writeFieldName("segmentThreshold");
+							gen.writeNumber(segmentThreshold);
 						}
-						builder.close();
+						gen.writeEndObject();
 					}
-					builder.close();
+					gen.writeEndObject();
 				}
-				builder.close();
+				gen.writeEndObject();
 			}
 
 			final Collection<CollectionLink> links = value.getLinks();
 			if (!links.isEmpty()) {
-				builder.add("links", ValueType.OBJECT);
+				gen.writeFieldName("links");
+				gen.writeStartObject();
 				for (final CollectionLink collectionLink : links) {
-					builder.add(collectionLink.getName(), ValueType.OBJECT);
+					gen.writeFieldName(collectionLink.getName());
+					gen.writeStartObject();
 					final Collection<String> analyzers = collectionLink.getAnalyzers();
 					if (!analyzers.isEmpty()) {
-						builder.add("analyzers", ValueType.ARRAY);
+						gen.writeFieldName("analyzers");
+						gen.writeStartArray();
 						for (final String analyzer : analyzers) {
-							builder.add(analyzer);
+							gen.writeString(analyzer);
 						}
-						builder.close();
+						gen.writeEndArray();
 					}
 					final Boolean includeAllFields = collectionLink.getIncludeAllFields();
 					if (includeAllFields != null) {
-						builder.add("includeAllFields", includeAllFields);
+						gen.writeFieldName("includeAllFields");
+						gen.writeBoolean(includeAllFields);
 					}
 					final Boolean trackListPositions = collectionLink.getTrackListPositions();
 					if (trackListPositions != null) {
-						builder.add("trackListPositions", trackListPositions);
+						gen.writeFieldName("trackListPositions");
+						gen.writeBoolean(trackListPositions);
 					}
 					final StoreValuesType storeValues = collectionLink.getStoreValues();
 					if (storeValues != null) {
-						builder.add("storeValues", storeValues.name().toLowerCase());
+						gen.writeFieldName("storeValues");
+						gen.writeString(storeValues.name().toLowerCase());
 					}
-					serializeFieldLinks(builder, collectionLink.getFields());
-					builder.close();
+					serializeFieldLinks(gen, collectionLink.getFields());
+					gen.writeEndObject();
 				}
-				builder.close();
-			}
-			if (wrap) {
-				builder.close();
+				gen.writeEndObject();
 			}
 		}
 	};
 
-	private static void serializeFieldLinks(final VPackBuilder builder, final Collection<FieldLink> links) {
+	private static void serializeFieldLinks(final JsonGenerator gen, final Collection<FieldLink> links)
+			throws IOException {
 		if (!links.isEmpty()) {
-			builder.add("fields", ValueType.OBJECT);
+			gen.writeFieldName("fields");
+			gen.writeStartObject();
 			for (final FieldLink fieldLink : links) {
-				builder.add(fieldLink.getName(), ValueType.OBJECT);
+				gen.writeFieldName(fieldLink.getName());
+				gen.writeStartObject();
 				final Collection<String> analyzers = fieldLink.getAnalyzers();
 				if (!analyzers.isEmpty()) {
-					builder.add("analyzers", ValueType.ARRAY);
+					gen.writeFieldName("analyzers");
+					gen.writeStartArray();
 					for (final String analyzer : analyzers) {
-						builder.add(analyzer);
+						gen.writeString(analyzer);
 					}
-					builder.close();
+					gen.writeEndArray();
 				}
 				final Boolean includeAllFields = fieldLink.getIncludeAllFields();
 				if (includeAllFields != null) {
-					builder.add("includeAllFields", includeAllFields);
+					gen.writeFieldName("includeAllFields");
+					gen.writeBoolean(includeAllFields);
 				}
 				final Boolean trackListPositions = fieldLink.getTrackListPositions();
 				if (trackListPositions != null) {
-					builder.add("trackListPositions", trackListPositions);
+					gen.writeFieldName("trackListPositions");
+					gen.writeBoolean(trackListPositions);
 				}
 				final StoreValuesType storeValues = fieldLink.getStoreValues();
 				if (storeValues != null) {
-					builder.add("storeValues", storeValues.name().toLowerCase());
+					gen.writeFieldName("storeValues");
+					gen.writeString(storeValues.name().toLowerCase());
 				}
-				serializeFieldLinks(builder, fieldLink.getFields());
-				builder.close();
+				serializeFieldLinks(gen, fieldLink.getFields());
+				gen.writeEndObject();
 			}
-			builder.close();
+			gen.writeEndObject();
 		}
 	}
 

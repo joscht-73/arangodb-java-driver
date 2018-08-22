@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.arangodb.velocypack.VPackSlice;
-import com.arangodb.velocypack.annotations.Expose;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * @author Mark Vollmary
@@ -36,12 +36,12 @@ public class Response {
 	private int type = 2;
 	private int responseCode;
 	private Map<String, String> meta;
-	@Expose(deserialize = false)
+	@JsonIgnore
 	private VPackSlice body = null;
 
 	public Response() {
 		super();
-		meta = new HashMap<String, String>();
+		meta = new HashMap<>();
 	}
 
 	public int getVersion() {

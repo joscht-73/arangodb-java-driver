@@ -29,14 +29,12 @@ import java.util.Map;
 import com.arangodb.ArangoDBException;
 import com.arangodb.entity.DocumentCreateEntity;
 import com.arangodb.entity.DocumentDeleteEntity;
-import com.arangodb.entity.DocumentField;
 import com.arangodb.entity.DocumentUpdateEntity;
 import com.arangodb.entity.ErrorEntity;
 import com.arangodb.entity.IndexEntity;
 import com.arangodb.entity.MultiDocumentEntity;
 import com.arangodb.entity.Permissions;
 import com.arangodb.internal.ArangoExecutor.ResponseDeserializer;
-import com.arangodb.internal.util.ArangoSerializationFactory.Serializer;
 import com.arangodb.internal.util.DocumentUtil;
 import com.arangodb.model.CollectionPropertiesOptions;
 import com.arangodb.model.CollectionRenameOptions;
@@ -56,12 +54,12 @@ import com.arangodb.model.PersistentIndexOptions;
 import com.arangodb.model.SkiplistIndexOptions;
 import com.arangodb.model.UserAccessOptions;
 import com.arangodb.util.ArangoSerializer;
-import com.arangodb.velocypack.Type;
 import com.arangodb.velocypack.VPackSlice;
 import com.arangodb.velocypack.exception.VPackException;
 import com.arangodb.velocystream.Request;
 import com.arangodb.velocystream.RequestType;
 import com.arangodb.velocystream.Response;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 /**
  * @author Mark Vollmary
@@ -111,7 +109,7 @@ public abstract class InternalArangoCollection<A extends InternalArangoDB<E>, D 
 		request.putQueryParam(RETURN_OLD, params.getReturnOld());
 		request.putQueryParam(SILENT, params.getSilent());
 		request.putQueryParam("overwrite", params.getOverwrite());
-		request.setBody(util(Serializer.CUSTOM).serialize(value));
+		request.setBody(util().serialize(value));
 		return request;
 	}
 
@@ -126,17 +124,17 @@ public abstract class InternalArangoCollection<A extends InternalArangoDB<E>, D 
 				final DocumentCreateEntity<T> doc = util().deserialize(body, DocumentCreateEntity.class);
 				final VPackSlice newDoc = body.get(NEW);
 				if (newDoc.isObject()) {
-					doc.setNew((T) util(Serializer.CUSTOM).deserialize(newDoc, value.getClass()));
+					doc.setNew((T) util().deserialize(newDoc, value.getClass()));
 				}
 				final VPackSlice oldDoc = body.get(OLD);
 				if (oldDoc.isObject()) {
-					doc.setOld((T) util(Serializer.CUSTOM).deserialize(oldDoc, value.getClass()));
+					doc.setOld((T) util().deserialize(oldDoc, value.getClass()));
 				}
 				if (options == null || Boolean.TRUE != options.getSilent()) {
-					final Map<DocumentField.Type, String> values = new HashMap<DocumentField.Type, String>();
-					values.put(DocumentField.Type.ID, doc.getId());
-					values.put(DocumentField.Type.KEY, doc.getKey());
-					values.put(DocumentField.Type.REV, doc.getRev());
+					final Map<String, String> values = new HashMap<>();
+					values.put("_id", doc.getId());
+					values.put("_key", doc.getKey());
+					values.put("_rev", doc.getRev());
 					executor.documentCache().setValues(value, values);
 				}
 				return doc;
@@ -149,8 +147,8 @@ public abstract class InternalArangoCollection<A extends InternalArangoDB<E>, D 
 		request.putQueryParam(ArangoRequestParam.WAIT_FOR_SYNC, params.getWaitForSync());
 		request.putQueryParam(RETURN_NEW, params.getReturnNew());
 		request.putQueryParam(SILENT, params.getSilent());
-		request.setBody(util(Serializer.CUSTOM).serialize(values,
-			new ArangoSerializer.Options().serializeNullValues(false).stringAsJson(true)));
+		request.setBody(
+			util().serialize(values, new ArangoSerializer.Options().serializeNullValues(false).stringAsJson(true)));
 		return request;
 	}
 
@@ -168,10 +166,10 @@ public abstract class InternalArangoCollection<A extends InternalArangoDB<E>, D 
 						type = (Class<T>) values.iterator().next().getClass();
 					}
 				}
-				final MultiDocumentEntity<DocumentCreateEntity<T>> multiDocument = new MultiDocumentEntity<DocumentCreateEntity<T>>();
-				final Collection<DocumentCreateEntity<T>> docs = new ArrayList<DocumentCreateEntity<T>>();
-				final Collection<ErrorEntity> errors = new ArrayList<ErrorEntity>();
-				final Collection<Object> documentsAndErrors = new ArrayList<Object>();
+				final MultiDocumentEntity<DocumentCreateEntity<T>> multiDocument = new MultiDocumentEntity<>();
+				final Collection<DocumentCreateEntity<T>> docs = new ArrayList<>();
+				final Collection<ErrorEntity> errors = new ArrayList<>();
+				final Collection<Object> documentsAndErrors = new ArrayList<>();
 				final VPackSlice body = response.getBody();
 				for (final Iterator<VPackSlice> iterator = body.arrayIterator(); iterator.hasNext();) {
 					final VPackSlice next = iterator.next();
@@ -183,7 +181,7 @@ public abstract class InternalArangoCollection<A extends InternalArangoDB<E>, D 
 						final DocumentCreateEntity<T> doc = util().deserialize(next, DocumentCreateEntity.class);
 						final VPackSlice newDoc = next.get(NEW);
 						if (newDoc.isObject()) {
-							doc.setNew((T) util(Serializer.CUSTOM).deserialize(newDoc, type));
+							doc.setNew((T) util().deserialize(newDoc, type));
 						}
 						docs.add(doc);
 						documentsAndErrors.add(doc);
@@ -202,8 +200,8 @@ public abstract class InternalArangoCollection<A extends InternalArangoDB<E>, D 
 	}
 
 	protected Request importDocumentsRequest(final Collection<?> values, final DocumentImportOptions options) {
-		return importDocumentsRequest(options).putQueryParam("type", ImportType.list).setBody(util(Serializer.CUSTOM)
-				.serialize(values, new ArangoSerializer.Options().serializeNullValues(false).stringAsJson(true)));
+		return importDocumentsRequest(options).putQueryParam("type", ImportType.list).setBody(
+			util().serialize(values, new ArangoSerializer.Options().serializeNullValues(false).stringAsJson(true)));
 	}
 
 	protected Request importDocumentsRequest(final DocumentImportOptions options) {
@@ -237,10 +235,10 @@ public abstract class InternalArangoCollection<A extends InternalArangoDB<E>, D 
 			@SuppressWarnings("unchecked")
 			@Override
 			public MultiDocumentEntity<T> deserialize(final Response response) throws VPackException {
-				final MultiDocumentEntity<T> multiDocument = new MultiDocumentEntity<T>();
-				final Collection<T> docs = new ArrayList<T>();
-				final Collection<ErrorEntity> errors = new ArrayList<ErrorEntity>();
-				final Collection<Object> documentsAndErrors = new ArrayList<Object>();
+				final MultiDocumentEntity<T> multiDocument = new MultiDocumentEntity<>();
+				final Collection<T> docs = new ArrayList<>();
+				final Collection<ErrorEntity> errors = new ArrayList<>();
+				final Collection<Object> documentsAndErrors = new ArrayList<>();
 				final VPackSlice body = response.getBody();
 				for (final Iterator<VPackSlice> iterator = body.arrayIterator(); iterator.hasNext();) {
 					final VPackSlice next = iterator.next();
@@ -249,7 +247,7 @@ public abstract class InternalArangoCollection<A extends InternalArangoDB<E>, D 
 						errors.add(error);
 						documentsAndErrors.add(error);
 					} else {
-						final T doc = (T) util(Serializer.CUSTOM).deserialize(next, type);
+						final T doc = (T) util().deserialize(next, type);
 						docs.add(doc);
 						documentsAndErrors.add(doc);
 					}
@@ -275,7 +273,7 @@ public abstract class InternalArangoCollection<A extends InternalArangoDB<E>, D 
 		request.putQueryParam(RETURN_NEW, params.getReturnNew());
 		request.putQueryParam(RETURN_OLD, params.getReturnOld());
 		request.putQueryParam(SILENT, params.getSilent());
-		request.setBody(util(Serializer.CUSTOM).serialize(value));
+		request.setBody(util().serialize(value));
 		return request;
 	}
 
@@ -290,15 +288,15 @@ public abstract class InternalArangoCollection<A extends InternalArangoDB<E>, D 
 				final DocumentUpdateEntity<T> doc = util().deserialize(body, DocumentUpdateEntity.class);
 				final VPackSlice newDoc = body.get(NEW);
 				if (newDoc.isObject()) {
-					doc.setNew((T) util(Serializer.CUSTOM).deserialize(newDoc, value.getClass()));
+					doc.setNew((T) util().deserialize(newDoc, value.getClass()));
 				}
 				final VPackSlice oldDoc = body.get(OLD);
 				if (oldDoc.isObject()) {
-					doc.setOld((T) util(Serializer.CUSTOM).deserialize(oldDoc, value.getClass()));
+					doc.setOld((T) util().deserialize(oldDoc, value.getClass()));
 				}
 				if (options == null || Boolean.TRUE != options.getSilent()) {
-					final Map<DocumentField.Type, String> values = new HashMap<DocumentField.Type, String>();
-					values.put(DocumentField.Type.REV, doc.getRev());
+					final Map<String, String> values = new HashMap<>();
+					values.put("_rev", doc.getRev());
 					executor.documentCache().setValues(value, values);
 				}
 				return doc;
@@ -314,8 +312,8 @@ public abstract class InternalArangoCollection<A extends InternalArangoDB<E>, D 
 		request.putQueryParam(RETURN_NEW, params.getReturnNew());
 		request.putQueryParam(RETURN_OLD, params.getReturnOld());
 		request.putQueryParam(SILENT, params.getSilent());
-		request.setBody(util(Serializer.CUSTOM).serialize(values,
-			new ArangoSerializer.Options().serializeNullValues(false).stringAsJson(true)));
+		request.setBody(
+			util().serialize(values, new ArangoSerializer.Options().serializeNullValues(false).stringAsJson(true)));
 		return request;
 	}
 
@@ -333,10 +331,10 @@ public abstract class InternalArangoCollection<A extends InternalArangoDB<E>, D 
 						type = (Class<T>) values.iterator().next().getClass();
 					}
 				}
-				final MultiDocumentEntity<DocumentUpdateEntity<T>> multiDocument = new MultiDocumentEntity<DocumentUpdateEntity<T>>();
-				final Collection<DocumentUpdateEntity<T>> docs = new ArrayList<DocumentUpdateEntity<T>>();
-				final Collection<ErrorEntity> errors = new ArrayList<ErrorEntity>();
-				final Collection<Object> documentsAndErrors = new ArrayList<Object>();
+				final MultiDocumentEntity<DocumentUpdateEntity<T>> multiDocument = new MultiDocumentEntity<>();
+				final Collection<DocumentUpdateEntity<T>> docs = new ArrayList<>();
+				final Collection<ErrorEntity> errors = new ArrayList<>();
+				final Collection<Object> documentsAndErrors = new ArrayList<>();
 				final VPackSlice body = response.getBody();
 				for (final Iterator<VPackSlice> iterator = body.arrayIterator(); iterator.hasNext();) {
 					final VPackSlice next = iterator.next();
@@ -348,11 +346,11 @@ public abstract class InternalArangoCollection<A extends InternalArangoDB<E>, D 
 						final DocumentUpdateEntity<T> doc = util().deserialize(next, DocumentUpdateEntity.class);
 						final VPackSlice newDoc = next.get(NEW);
 						if (newDoc.isObject()) {
-							doc.setNew((T) util(Serializer.CUSTOM).deserialize(newDoc, type));
+							doc.setNew((T) util().deserialize(newDoc, type));
 						}
 						final VPackSlice oldDoc = next.get(OLD);
 						if (oldDoc.isObject()) {
-							doc.setOld((T) util(Serializer.CUSTOM).deserialize(oldDoc, type));
+							doc.setOld((T) util().deserialize(oldDoc, type));
 						}
 						docs.add(doc);
 						documentsAndErrors.add(doc);
@@ -378,7 +376,7 @@ public abstract class InternalArangoCollection<A extends InternalArangoDB<E>, D 
 		request.putQueryParam(RETURN_NEW, params.getReturnNew());
 		request.putQueryParam(RETURN_OLD, params.getReturnOld());
 		request.putQueryParam(SILENT, params.getSilent());
-		request.setBody(util(Serializer.CUSTOM).serialize(value, new ArangoSerializer.Options()
+		request.setBody(util().serialize(value, new ArangoSerializer.Options()
 				.serializeNullValues(params.getSerializeNull() == null || params.getSerializeNull())));
 		return request;
 	}
@@ -394,15 +392,15 @@ public abstract class InternalArangoCollection<A extends InternalArangoDB<E>, D 
 				final DocumentUpdateEntity<T> doc = util().deserialize(body, DocumentUpdateEntity.class);
 				final VPackSlice newDoc = body.get(NEW);
 				if (newDoc.isObject()) {
-					doc.setNew((T) util(Serializer.CUSTOM).deserialize(newDoc, value.getClass()));
+					doc.setNew((T) util().deserialize(newDoc, value.getClass()));
 				}
 				final VPackSlice oldDoc = body.get(OLD);
 				if (oldDoc.isObject()) {
-					doc.setOld((T) util(Serializer.CUSTOM).deserialize(oldDoc, value.getClass()));
+					doc.setOld((T) util().deserialize(oldDoc, value.getClass()));
 				}
 				if (options == null || Boolean.TRUE != options.getSilent()) {
-					final Map<DocumentField.Type, String> values = new HashMap<DocumentField.Type, String>();
-					values.put(DocumentField.Type.REV, doc.getRev());
+					final Map<String, String> values = new HashMap<>();
+					values.put("_rev", doc.getRev());
 					executor.documentCache().setValues(value, values);
 				}
 				return doc;
@@ -421,7 +419,7 @@ public abstract class InternalArangoCollection<A extends InternalArangoDB<E>, D 
 		request.putQueryParam(RETURN_NEW, params.getReturnNew());
 		request.putQueryParam(RETURN_OLD, params.getReturnOld());
 		request.putQueryParam(SILENT, params.getSilent());
-		request.setBody(util(Serializer.CUSTOM).serialize(values,
+		request.setBody(util().serialize(values,
 			new ArangoSerializer.Options()
 					.serializeNullValues(params.getSerializeNull() == null || params.getSerializeNull())
 					.stringAsJson(true)));
@@ -442,10 +440,10 @@ public abstract class InternalArangoCollection<A extends InternalArangoDB<E>, D 
 						type = (Class<T>) values.iterator().next().getClass();
 					}
 				}
-				final MultiDocumentEntity<DocumentUpdateEntity<T>> multiDocument = new MultiDocumentEntity<DocumentUpdateEntity<T>>();
-				final Collection<DocumentUpdateEntity<T>> docs = new ArrayList<DocumentUpdateEntity<T>>();
-				final Collection<ErrorEntity> errors = new ArrayList<ErrorEntity>();
-				final Collection<Object> documentsAndErrors = new ArrayList<Object>();
+				final MultiDocumentEntity<DocumentUpdateEntity<T>> multiDocument = new MultiDocumentEntity<>();
+				final Collection<DocumentUpdateEntity<T>> docs = new ArrayList<>();
+				final Collection<ErrorEntity> errors = new ArrayList<>();
+				final Collection<Object> documentsAndErrors = new ArrayList<>();
 				final VPackSlice body = response.getBody();
 				for (final Iterator<VPackSlice> iterator = body.arrayIterator(); iterator.hasNext();) {
 					final VPackSlice next = iterator.next();
@@ -457,11 +455,11 @@ public abstract class InternalArangoCollection<A extends InternalArangoDB<E>, D 
 						final DocumentUpdateEntity<T> doc = util().deserialize(next, DocumentUpdateEntity.class);
 						final VPackSlice newDoc = next.get(NEW);
 						if (newDoc.isObject()) {
-							doc.setNew((T) util(Serializer.CUSTOM).deserialize(newDoc, type));
+							doc.setNew((T) util().deserialize(newDoc, type));
 						}
 						final VPackSlice oldDoc = next.get(OLD);
 						if (oldDoc.isObject()) {
-							doc.setOld((T) util(Serializer.CUSTOM).deserialize(oldDoc, type));
+							doc.setOld((T) util().deserialize(oldDoc, type));
 						}
 						docs.add(doc);
 						documentsAndErrors.add(doc);
@@ -496,7 +494,7 @@ public abstract class InternalArangoCollection<A extends InternalArangoDB<E>, D 
 				final DocumentDeleteEntity<T> doc = util().deserialize(body, DocumentDeleteEntity.class);
 				final VPackSlice oldDoc = body.get(OLD);
 				if (oldDoc.isObject()) {
-					doc.setOld((T) util(Serializer.CUSTOM).deserialize(oldDoc, type));
+					doc.setOld((T) util().deserialize(oldDoc, type));
 				}
 				return doc;
 			}
@@ -520,10 +518,10 @@ public abstract class InternalArangoCollection<A extends InternalArangoDB<E>, D 
 			@Override
 			public MultiDocumentEntity<DocumentDeleteEntity<T>> deserialize(final Response response)
 					throws VPackException {
-				final MultiDocumentEntity<DocumentDeleteEntity<T>> multiDocument = new MultiDocumentEntity<DocumentDeleteEntity<T>>();
-				final Collection<DocumentDeleteEntity<T>> docs = new ArrayList<DocumentDeleteEntity<T>>();
-				final Collection<ErrorEntity> errors = new ArrayList<ErrorEntity>();
-				final Collection<Object> documentsAndErrors = new ArrayList<Object>();
+				final MultiDocumentEntity<DocumentDeleteEntity<T>> multiDocument = new MultiDocumentEntity<>();
+				final Collection<DocumentDeleteEntity<T>> docs = new ArrayList<>();
+				final Collection<ErrorEntity> errors = new ArrayList<>();
+				final Collection<Object> documentsAndErrors = new ArrayList<>();
 				final VPackSlice body = response.getBody();
 				for (final Iterator<VPackSlice> iterator = body.arrayIterator(); iterator.hasNext();) {
 					final VPackSlice next = iterator.next();
@@ -535,7 +533,7 @@ public abstract class InternalArangoCollection<A extends InternalArangoDB<E>, D 
 						final DocumentDeleteEntity<T> doc = util().deserialize(next, DocumentDeleteEntity.class);
 						final VPackSlice oldDoc = next.get(OLD);
 						if (oldDoc.isObject()) {
-							doc.setOld((T) util(Serializer.CUSTOM).deserialize(oldDoc, type));
+							doc.setOld((T) util().deserialize(oldDoc, type));
 						}
 						docs.add(doc);
 						documentsAndErrors.add(doc);
@@ -639,8 +637,9 @@ public abstract class InternalArangoCollection<A extends InternalArangoDB<E>, D 
 		return new ResponseDeserializer<Collection<IndexEntity>>() {
 			@Override
 			public Collection<IndexEntity> deserialize(final Response response) throws VPackException {
-				return util().deserialize(response.getBody().get("indexes"), new Type<Collection<IndexEntity>>() {
-				}.getType());
+				return util().deserialize(response.getBody().get("indexes"),
+					new TypeReference<Collection<IndexEntity>>() {
+					}.getType());
 			}
 		};
 	}

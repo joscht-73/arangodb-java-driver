@@ -56,9 +56,9 @@ public class AqlQueryWithSpecialReturnTypesExample extends ExampleBase {
 	private static void createExamples() {
 		for (int i = 0; i < 100; i++) {
 			final BaseDocument value = new BaseDocument();
-			value.addAttribute("name", "TestUser" + i);
-			value.addAttribute("gender", (i % 2) == 0 ? Gender.MALE : Gender.FEMALE);
-			value.addAttribute("age", i + 10);
+			value.put("name", "TestUser" + i);
+			value.put("gender", (i % 2) == 0 ? Gender.MALE : Gender.FEMALE);
+			value.put("age", i + 10);
 			db.collection(COLLECTION_NAME).insertDocument(value);
 		}
 	}

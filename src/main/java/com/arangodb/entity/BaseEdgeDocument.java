@@ -22,7 +22,7 @@ package com.arangodb.entity;
 
 import java.util.Map;
 
-import com.arangodb.entity.DocumentField.Type;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @author Mark Vollmary
@@ -32,9 +32,9 @@ public class BaseEdgeDocument extends BaseDocument {
 
 	private static final long serialVersionUID = 6904923804449368783L;
 
-	@DocumentField(Type.FROM)
+	@JsonProperty("_from")
 	private String from;
-	@DocumentField(Type.TO)
+	@JsonProperty("_to")
 	private String to;
 
 	public BaseEdgeDocument() {
@@ -55,11 +55,11 @@ public class BaseEdgeDocument extends BaseDocument {
 
 	public BaseEdgeDocument(final Map<String, Object> properties) {
 		super(properties);
-		final Object tmpFrom = properties.remove(DocumentField.Type.FROM.getSerializeName());
+		final Object tmpFrom = properties.remove("_from");
 		if (tmpFrom != null) {
 			from = tmpFrom.toString();
 		}
-		final Object tmpTo = properties.remove(DocumentField.Type.TO.getSerializeName());
+		final Object tmpTo = properties.remove("_to");
 		if (tmpTo != null) {
 			to = tmpTo.toString();
 		}

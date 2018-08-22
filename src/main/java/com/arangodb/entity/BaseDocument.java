@@ -24,7 +24,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.arangodb.entity.DocumentField.Type;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @author Mark Vollmary
@@ -34,17 +34,17 @@ public class BaseDocument implements Serializable {
 
 	private static final long serialVersionUID = -1824742667228719116L;
 
-	@DocumentField(Type.ID)
+	@JsonProperty("_id")
 	protected String id;
-	@DocumentField(Type.KEY)
+	@JsonProperty("_key")
 	protected String key;
-	@DocumentField(Type.REV)
+	@JsonProperty("_rev")
 	protected String revision;
 	protected Map<String, Object> properties;
 
 	public BaseDocument() {
 		super();
-		properties = new HashMap<String, Object>();
+		properties = new HashMap<>();
 	}
 
 	public BaseDocument(final String key) {
@@ -54,15 +54,15 @@ public class BaseDocument implements Serializable {
 
 	public BaseDocument(final Map<String, Object> properties) {
 		this();
-		final Object tmpId = properties.remove(DocumentField.Type.ID.getSerializeName());
+		final Object tmpId = properties.remove("_id");
 		if (tmpId != null) {
 			id = tmpId.toString();
 		}
-		final Object tmpKey = properties.remove(DocumentField.Type.KEY.getSerializeName());
+		final Object tmpKey = properties.remove("_key");
 		if (tmpKey != null) {
 			key = tmpKey.toString();
 		}
-		final Object tmpRev = properties.remove(DocumentField.Type.REV.getSerializeName());
+		final Object tmpRev = properties.remove("_rev");
 		if (tmpRev != null) {
 			revision = tmpRev.toString();
 		}
@@ -101,18 +101,27 @@ public class BaseDocument implements Serializable {
 		this.properties = properties;
 	}
 
-	public void addAttribute(final String key, final Object value) {
+	public void put(final String key, final Object value) {
 		properties.put(key, value);
 	}
 
-	public void updateAttribute(final String key, final Object value) {
-		if (properties.containsKey(key)) {
-			properties.put(key, value);
-		}
+	@Deprecated
+	public void addAttribute(final String key, final Object value) {
+		put(key, value);
 	}
 
-	public Object getAttribute(final String key) {
+	@Deprecated
+	public void updateAttribute(final String key, final Object value) {
+		put(key, value);
+	}
+
+	public Object get(final String key) {
 		return properties.get(key);
+	}
+
+	@Deprecated
+	public Object getAttribute(final String key) {
+		return get(key);
 	}
 
 	@Override

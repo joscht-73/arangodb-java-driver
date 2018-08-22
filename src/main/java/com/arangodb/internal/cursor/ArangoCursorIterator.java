@@ -27,7 +27,6 @@ import com.arangodb.ArangoIterator;
 import com.arangodb.entity.CursorEntity;
 import com.arangodb.internal.ArangoCursorExecute;
 import com.arangodb.internal.InternalArangoDatabase;
-import com.arangodb.internal.util.ArangoSerializationFactory.Serializer;
 import com.arangodb.velocypack.VPackSlice;
 
 /**
@@ -60,7 +59,7 @@ public class ArangoCursorIterator<T> implements ArangoIterator<T> {
 
 	@Override
 	public boolean hasNext() {
-		return pos < result.getResult().size() || result.getHasMore();
+		return pos < result.getResult().size() || result.getHasMore() == Boolean.TRUE;
 	}
 
 	@Override
@@ -76,7 +75,7 @@ public class ArangoCursorIterator<T> implements ArangoIterator<T> {
 	}
 
 	protected <R> R deserialize(final VPackSlice result, final Class<R> type) {
-		return db.util(Serializer.CUSTOM).deserialize(result, type);
+		return db.util().deserialize(result, type);
 	}
 
 	@Override

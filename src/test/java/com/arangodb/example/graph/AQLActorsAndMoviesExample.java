@@ -342,9 +342,9 @@ public class AQLActorsAndMoviesExample {
 		final String tagline) {
 		final BaseDocument value = new BaseDocument();
 		value.setKey(key);
-		value.addAttribute("title", title);
-		value.addAttribute("released", released);
-		value.addAttribute("tagline", tagline);
+		value.put("title", title);
+		value.put("released", released);
+		value.put("tagline", tagline);
 		return movies.insertDocument(value);
 	}
 
@@ -355,8 +355,8 @@ public class AQLActorsAndMoviesExample {
 		final int born) {
 		final BaseDocument value = new BaseDocument();
 		value.setKey(key);
-		value.addAttribute("name", name);
-		value.addAttribute("born", born);
+		value.put("name", name);
+		value.put("born", born);
 		return actors.insertDocument(value);
 	}
 
@@ -369,8 +369,8 @@ public class AQLActorsAndMoviesExample {
 		final BaseEdgeDocument value = new BaseEdgeDocument();
 		value.setFrom(actor);
 		value.setTo(movie);
-		value.addAttribute("roles", roles);
-		value.addAttribute("year", year);
+		value.put("roles", roles);
+		value.put("year", year);
 		return actsIn.insertDocument(value);
 	}
 

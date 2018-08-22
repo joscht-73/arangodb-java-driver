@@ -37,8 +37,8 @@ public class FirstProject {
 		// creating a document
 		final BaseDocument myObject = new BaseDocument();
 		myObject.setKey("myKey");
-		myObject.addAttribute("a", "Foo");
-		myObject.addAttribute("b", 42);
+		myObject.put("a", "Foo");
+		myObject.put("b", 42);
 		try {
 			arangoDB.db(dbName).collection(collectionName).insertDocument(myObject);
 			System.out.println("Document created");
@@ -51,8 +51,8 @@ public class FirstProject {
 			final BaseDocument myDocument = arangoDB.db(dbName).collection(collectionName).getDocument("myKey",
 				BaseDocument.class);
 			System.out.println("Key: " + myDocument.getKey());
-			System.out.println("Attribute a: " + myDocument.getAttribute("a"));
-			System.out.println("Attribute b: " + myDocument.getAttribute("b"));
+			System.out.println("Attribute a: " + myDocument.get("a"));
+			System.out.println("Attribute b: " + myDocument.get("b"));
 		} catch (final ArangoDBException e) {
 			System.err.println("Failed to get document: myKey; " + e.getMessage());
 		}
@@ -69,7 +69,7 @@ public class FirstProject {
 		}
 
 		// update a document
-		myObject.addAttribute("c", "Bar");
+		myObject.put("c", "Bar");
 		try {
 			arangoDB.db(dbName).collection(collectionName).updateDocument("myKey", myObject);
 		} catch (final ArangoDBException e) {
@@ -81,9 +81,9 @@ public class FirstProject {
 			final BaseDocument myUpdatedDocument = arangoDB.db(dbName).collection(collectionName).getDocument("myKey",
 				BaseDocument.class);
 			System.out.println("Key: " + myUpdatedDocument.getKey());
-			System.out.println("Attribute a: " + myUpdatedDocument.getAttribute("a"));
-			System.out.println("Attribute b: " + myUpdatedDocument.getAttribute("b"));
-			System.out.println("Attribute c: " + myUpdatedDocument.getAttribute("c"));
+			System.out.println("Attribute a: " + myUpdatedDocument.get("a"));
+			System.out.println("Attribute b: " + myUpdatedDocument.get("b"));
+			System.out.println("Attribute c: " + myUpdatedDocument.get("c"));
 		} catch (final ArangoDBException e) {
 			System.err.println("Failed to get document: myKey; " + e.getMessage());
 		}
@@ -100,7 +100,7 @@ public class FirstProject {
 		for (int i = 0; i < 10; i++) {
 			final BaseDocument value = new BaseDocument();
 			value.setKey(String.valueOf(i));
-			value.addAttribute("name", "Homer");
+			value.put("name", "Homer");
 			collection.insertDocument(value);
 		}
 

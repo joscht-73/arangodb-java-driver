@@ -56,13 +56,13 @@ public class ArangoSerializationTest {
 	public void deseriarlize() {
 		final VPackBuilder builder = new VPackBuilder().add(ValueType.OBJECT).add("foo", "bar").close();
 		final BaseDocument doc = util.deserialize(builder.slice(), BaseDocument.class);
-		assertThat(doc.getAttribute("foo").toString(), is("bar"));
+		assertThat(doc.get("foo").toString(), is("bar"));
 	}
 
 	@Test
 	public void serialize() {
 		final BaseDocument entity = new BaseDocument();
-		entity.addAttribute("foo", "bar");
+		entity.put("foo", "bar");
 		final VPackSlice vpack = util.serialize(entity);
 		assertThat(vpack.get("foo").isString(), is(true));
 		assertThat(vpack.get("foo").getAsString(), is("bar"));
@@ -71,7 +71,7 @@ public class ArangoSerializationTest {
 	@Test
 	public void serializeNullValues() {
 		final BaseDocument entity = new BaseDocument();
-		entity.addAttribute("foo", null);
+		entity.put("foo", null);
 		final VPackSlice vpack = util.serialize(entity, new ArangoSerializer.Options().serializeNullValues(true));
 		assertThat(vpack.get("foo").isNull(), is(true));
 	}

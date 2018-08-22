@@ -30,19 +30,19 @@ import com.arangodb.entity.Permissions;
 import com.arangodb.entity.ServerRole;
 import com.arangodb.entity.UserEntity;
 import com.arangodb.internal.ArangoExecutor.ResponseDeserializer;
-import com.arangodb.internal.util.ArangoSerializationFactory;
 import com.arangodb.model.DBCreateOptions;
 import com.arangodb.model.LogOptions;
 import com.arangodb.model.OptionsBuilder;
 import com.arangodb.model.UserAccessOptions;
 import com.arangodb.model.UserCreateOptions;
 import com.arangodb.model.UserUpdateOptions;
-import com.arangodb.velocypack.Type;
+import com.arangodb.util.ArangoSerialization;
 import com.arangodb.velocypack.VPackSlice;
 import com.arangodb.velocypack.exception.VPackException;
 import com.arangodb.velocystream.Request;
 import com.arangodb.velocystream.RequestType;
 import com.arangodb.velocystream.Response;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 /**
  * @author Mark Vollmary
@@ -56,8 +56,8 @@ public abstract class InternalArangoDB<E extends ArangoExecutor> extends ArangoE
 	protected static final String PATH_ENDPOINTS = "/_api/cluster/endpoints";
 	private static final String PATH_API_USER = "/_api/user";
 
-	protected InternalArangoDB(final E executor, final ArangoSerializationFactory util, final ArangoContext context) {
-		super(executor, util, context);
+	protected InternalArangoDB(final E executor, final ArangoSerialization serializer, final ArangoContext context) {
+		super(executor, serializer, context);
 	}
 
 	protected Request getRoleRequest() {
@@ -98,7 +98,7 @@ public abstract class InternalArangoDB<E extends ArangoExecutor> extends ArangoE
 			@Override
 			public Collection<String> deserialize(final Response response) throws VPackException {
 				final VPackSlice result = response.getBody().get(ArangoResponseField.RESULT);
-				return util().deserialize(result, new Type<Collection<String>>() {
+				return util().deserialize(result, new TypeReference<Collection<String>>() {
 				}.getType());
 			}
 		};
@@ -113,7 +113,7 @@ public abstract class InternalArangoDB<E extends ArangoExecutor> extends ArangoE
 			@Override
 			public Collection<String> deserialize(final Response response) throws VPackException {
 				final VPackSlice result = response.getBody().get(ArangoResponseField.RESULT);
-				final Collection<String> dbs = new ArrayList<String>();
+				final Collection<String> dbs = new ArrayList<>();
 				for (final Iterator<Entry<String, VPackSlice>> iterator = result.objectIterator(); iterator
 						.hasNext();) {
 					dbs.add(iterator.next().getKey());
@@ -152,7 +152,7 @@ public abstract class InternalArangoDB<E extends ArangoExecutor> extends ArangoE
 			@Override
 			public Collection<UserEntity> deserialize(final Response response) throws VPackException {
 				final VPackSlice result = response.getBody().get(ArangoResponseField.RESULT);
-				return util().deserialize(result, new Type<Collection<UserEntity>>() {
+				return util().deserialize(result, new TypeReference<Collection<UserEntity>>() {
 				}.getType());
 			}
 		};

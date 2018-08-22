@@ -20,8 +20,7 @@
 
 package com.arangodb.example.graph;
 
-import com.arangodb.entity.DocumentField;
-import com.arangodb.entity.DocumentField.Type;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @author a-brandt
@@ -29,19 +28,19 @@ import com.arangodb.entity.DocumentField.Type;
  */
 public class CircleEdge {
 
-	@DocumentField(Type.ID)
+	@JsonProperty("_id")
 	private String id;
 
-	@DocumentField(Type.KEY)
+	@JsonProperty("_key")
 	private String key;
 
-	@DocumentField(Type.REV)
+	@JsonProperty("_rev")
 	private String revision;
 
-	@DocumentField(Type.FROM)
+	@JsonProperty("_from")
 	private String from;
 
-	@DocumentField(Type.TO)
+	@JsonProperty("_to")
 	private String to;
 
 	private Boolean theFalse;
@@ -61,7 +60,7 @@ public class CircleEdge {
 		return id;
 	}
 
-	public void setId(String id) {
+	public void setId(final String id) {
 		this.id = id;
 	}
 
@@ -69,7 +68,7 @@ public class CircleEdge {
 		return key;
 	}
 
-	public void setKey(String key) {
+	public void setKey(final String key) {
 		this.key = key;
 	}
 
@@ -77,7 +76,7 @@ public class CircleEdge {
 		return revision;
 	}
 
-	public void setRevision(String revision) {
+	public void setRevision(final String revision) {
 		this.revision = revision;
 	}
 
@@ -85,7 +84,7 @@ public class CircleEdge {
 		return from;
 	}
 
-	public void setFrom(String from) {
+	public void setFrom(final String from) {
 		this.from = from;
 	}
 
@@ -93,7 +92,7 @@ public class CircleEdge {
 		return to;
 	}
 
-	public void setTo(String to) {
+	public void setTo(final String to) {
 		this.to = to;
 	}
 
@@ -101,7 +100,7 @@ public class CircleEdge {
 		return theFalse;
 	}
 
-	public void setTheFalse(Boolean theFalse) {
+	public void setTheFalse(final Boolean theFalse) {
 		this.theFalse = theFalse;
 	}
 
@@ -109,7 +108,7 @@ public class CircleEdge {
 		return theTruth;
 	}
 
-	public void setTheTruth(Boolean theTruth) {
+	public void setTheTruth(final Boolean theTruth) {
 		this.theTruth = theTruth;
 	}
 
@@ -117,7 +116,7 @@ public class CircleEdge {
 		return label;
 	}
 
-	public void setLabel(String label) {
+	public void setLabel(final String label) {
 		this.label = label;
 	}
 

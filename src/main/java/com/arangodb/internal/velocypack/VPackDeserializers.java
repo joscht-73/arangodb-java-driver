@@ -20,6 +20,7 @@
 
 package com.arangodb.internal.velocypack;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -49,201 +50,186 @@ import com.arangodb.entity.arangosearch.ConsolidateThreshold;
 import com.arangodb.entity.arangosearch.ConsolidateType;
 import com.arangodb.entity.arangosearch.FieldLink;
 import com.arangodb.entity.arangosearch.StoreValuesType;
-import com.arangodb.velocypack.VPackDeserializationContext;
-import com.arangodb.velocypack.VPackDeserializer;
-import com.arangodb.velocypack.VPackSlice;
-import com.arangodb.velocypack.exception.VPackException;
 import com.arangodb.velocystream.Response;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonNode;
 
 /**
  * @author Mark Vollmary
  *
  */
+@SuppressWarnings("unchecked")
 public class VPackDeserializers {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(VPackDeserializers.class);
 	private static final String DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
 
-	public static final VPackDeserializer<Response> RESPONSE = new VPackDeserializer<Response>() {
-		@SuppressWarnings({ "unchecked", "rawtypes" })
+	public static final JsonDeserializer<Response> RESPONSE = new JsonDeserializer<Response>() {
 		@Override
-		public Response deserialize(
-			final VPackSlice parent,
-			final VPackSlice vpack,
-			final VPackDeserializationContext context) throws VPackException {
+		public Response deserialize(final JsonParser p, final DeserializationContext ctxt)
+				throws IOException, JsonProcessingException {
 			final Response response = new Response();
-			response.setVersion(vpack.get(0).getAsInt());
-			response.setType(vpack.get(1).getAsInt());
-			response.setResponseCode(vpack.get(2).getAsInt());
-			if (vpack.size() > 3) {
-				response.setMeta((Map) context.deserialize(vpack.get(3), Map.class));
+			final JsonNode node = p.getCodec().readTree(p);
+			response.setVersion(node.get(0).asInt());
+			response.setType(node.get(1).asInt());
+			response.setResponseCode(node.get(2).asInt());
+			if (node.size() > 3) {
+				final JsonParser metaP = node.get(3).traverse(ctxt.getParser().getCodec());
+				response.setMeta(metaP.readValueAs(Map.class));
 			}
 			return response;
 		}
 	};
 
-	public static final VPackDeserializer<CollectionType> COLLECTION_TYPE = new VPackDeserializer<CollectionType>() {
+	public static final JsonDeserializer<CollectionType> COLLECTION_TYPE = new JsonDeserializer<CollectionType>() {
 		@Override
-		public CollectionType deserialize(
-			final VPackSlice parent,
-			final VPackSlice vpack,
-			final VPackDeserializationContext context) throws VPackException {
-			return CollectionType.fromType(vpack.getAsInt());
+		public CollectionType deserialize(final JsonParser p, final DeserializationContext ctxt)
+				throws IOException, JsonProcessingException {
+			return CollectionType.fromType(p.getValueAsInt());
 		}
 	};
 
-	public static final VPackDeserializer<CollectionStatus> COLLECTION_STATUS = new VPackDeserializer<CollectionStatus>() {
+	public static final JsonDeserializer<CollectionStatus> COLLECTION_STATUS = new JsonDeserializer<CollectionStatus>() {
 		@Override
-		public CollectionStatus deserialize(
-			final VPackSlice parent,
-			final VPackSlice vpack,
-			final VPackDeserializationContext context) throws VPackException {
-			return CollectionStatus.fromStatus(vpack.getAsInt());
+		public CollectionStatus deserialize(final JsonParser p, final DeserializationContext ctxt)
+				throws IOException, JsonProcessingException {
+			return CollectionStatus.fromStatus(p.getValueAsInt());
 		}
 	};
 
-	@SuppressWarnings("unchecked")
-	public static final VPackDeserializer<BaseDocument> BASE_DOCUMENT = new VPackDeserializer<BaseDocument>() {
-		@SuppressWarnings("rawtypes")
+	public static final JsonDeserializer<BaseDocument> BASE_DOCUMENT = new JsonDeserializer<BaseDocument>() {
 		@Override
-		public BaseDocument deserialize(
-			final VPackSlice parent,
-			final VPackSlice vpack,
-			final VPackDeserializationContext context) throws VPackException {
-			return new BaseDocument((Map) context.deserialize(vpack, Map.class));
+		public BaseDocument deserialize(final JsonParser p, final DeserializationContext ctxt)
+				throws IOException, JsonProcessingException {
+			return new BaseDocument(p.readValueAs(Map.class));
 		}
 	};
 
-	@SuppressWarnings("unchecked")
-	public static final VPackDeserializer<BaseEdgeDocument> BASE_EDGE_DOCUMENT = new VPackDeserializer<BaseEdgeDocument>() {
-		@SuppressWarnings("rawtypes")
+	public static final JsonDeserializer<BaseEdgeDocument> BASE_EDGE_DOCUMENT = new JsonDeserializer<BaseEdgeDocument>() {
 		@Override
-		public BaseEdgeDocument deserialize(
-			final VPackSlice parent,
-			final VPackSlice vpack,
-			final VPackDeserializationContext context) throws VPackException {
-			return new BaseEdgeDocument((Map) context.deserialize(vpack, Map.class));
+		public BaseEdgeDocument deserialize(final JsonParser p, final DeserializationContext ctxt)
+				throws IOException, JsonProcessingException {
+			return new BaseEdgeDocument(p.readValueAs(Map.class));
 		}
 	};
 
-	public static final VPackDeserializer<Date> DATE_STRING = new VPackDeserializer<Date>() {
+	public static final JsonDeserializer<Date> DATE_STRING = new JsonDeserializer<Date>() {
 		@Override
-		public Date deserialize(
-			final VPackSlice parent,
-			final VPackSlice vpack,
-			final VPackDeserializationContext context) throws VPackException {
+		public Date deserialize(final JsonParser p, final DeserializationContext ctxt)
+				throws IOException, JsonProcessingException {
 			try {
-				return new SimpleDateFormat(DATE_TIME_FORMAT).parse(vpack.getAsString());
+				return new SimpleDateFormat(DATE_TIME_FORMAT).parse(p.getValueAsString());
 			} catch (final ParseException e) {
 				if (LOGGER.isDebugEnabled()) {
-					LOGGER.debug("got ParseException for date string: " + vpack.getAsString());
+					LOGGER.debug("got ParseException for date string: " + p.getValueAsString());
 				}
 			}
 			return null;
 		}
 	};
 
-	public static final VPackDeserializer<LogLevel> LOG_LEVEL = new VPackDeserializer<LogLevel>() {
+	public static final JsonDeserializer<LogLevel> LOG_LEVEL = new JsonDeserializer<LogLevel>() {
 		@Override
-		public LogLevel deserialize(
-			final VPackSlice parent,
-			final VPackSlice vpack,
-			final VPackDeserializationContext context) throws VPackException {
-			return LogLevel.fromLevel(vpack.getAsInt());
+		public LogLevel deserialize(final JsonParser p, final DeserializationContext ctxt)
+				throws IOException, JsonProcessingException {
+			return LogLevel.fromLevel(p.getValueAsInt());
 		}
 	};
 
-	public static final VPackDeserializer<ArangoDBVersion.License> LICENSE = new VPackDeserializer<ArangoDBVersion.License>() {
+	public static final JsonDeserializer<ArangoDBVersion.License> LICENSE = new JsonDeserializer<ArangoDBVersion.License>() {
 		@Override
-		public License deserialize(
-			final VPackSlice parent,
-			final VPackSlice vpack,
-			final VPackDeserializationContext context) throws VPackException {
-			return License.valueOf(vpack.getAsString().toUpperCase());
+		public License deserialize(final JsonParser p, final DeserializationContext ctxt)
+				throws IOException, JsonProcessingException {
+			return License.valueOf(p.getValueAsString().toUpperCase());
 		}
 	};
 
-	public static final VPackDeserializer<Permissions> PERMISSIONS = new VPackDeserializer<Permissions>() {
+	public static final JsonDeserializer<Permissions> PERMISSIONS = new JsonDeserializer<Permissions>() {
 		@Override
-		public Permissions deserialize(
-			final VPackSlice parent,
-			final VPackSlice vpack,
-			final VPackDeserializationContext context) throws VPackException {
-			return Permissions.valueOf(vpack.getAsString().toUpperCase());
+		public Permissions deserialize(final JsonParser p, final DeserializationContext ctxt)
+				throws IOException, JsonProcessingException {
+			return Permissions.valueOf(p.getValueAsString().toUpperCase());
 		}
 	};
 
-	public static final VPackDeserializer<QueryExecutionState> QUERY_EXECUTION_STATE = new VPackDeserializer<QueryExecutionState>() {
+	public static final JsonDeserializer<QueryExecutionState> QUERY_EXECUTION_STATE = new JsonDeserializer<QueryExecutionState>() {
 		@Override
-		public QueryExecutionState deserialize(
-			final VPackSlice parent,
-			final VPackSlice vpack,
-			final VPackDeserializationContext context) throws VPackException {
-			return QueryExecutionState.valueOf(vpack.getAsString().toUpperCase().replaceAll(" ", "_"));
+		public QueryExecutionState deserialize(final JsonParser p, final DeserializationContext ctxt)
+				throws IOException, JsonProcessingException {
+			return QueryExecutionState.valueOf(p.getValueAsString().toUpperCase().replaceAll(" ", "_"));
 		}
+
 	};
 
-	public static final VPackDeserializer<ReplicationFactor> REPLICATION_FACTOR = new VPackDeserializer<ReplicationFactor>() {
+	public static final JsonDeserializer<ReplicationFactor> REPLICATION_FACTOR = new JsonDeserializer<ReplicationFactor>() {
 		@Override
-		public ReplicationFactor deserialize(
-			final VPackSlice parent,
-			final VPackSlice vpack,
-			final VPackDeserializationContext context) throws VPackException {
+		public ReplicationFactor deserialize(final JsonParser p, final DeserializationContext ctxt)
+				throws IOException, JsonProcessingException {
 			final ReplicationFactor replicationFactor = new ReplicationFactor();
-			if (vpack.isString() && vpack.getAsString().equals("satellite")) {
+			final String asString = p.getValueAsString();
+			if ("satellite".equals(asString)) {
 				replicationFactor.setSatellite(true);
 			} else {
-				replicationFactor.setReplicationFactor(vpack.getAsInt());
+				replicationFactor.setReplicationFactor(p.getValueAsInt());
 			}
 			return replicationFactor;
 		}
 	};
 
-	public static final VPackDeserializer<ViewType> VIEW_TYPE = new VPackDeserializer<ViewType>() {
+	public static final JsonDeserializer<ViewType> VIEW_TYPE = new JsonDeserializer<ViewType>() {
 		@Override
-		public ViewType deserialize(
-			final VPackSlice parent,
-			final VPackSlice vpack,
-			final VPackDeserializationContext context) throws VPackException {
-			return "arangosearch".equals(vpack.getAsString()) ? ViewType.ARANGO_SEARCH
-					: ViewType.valueOf(vpack.getAsString().toUpperCase());
+		public ViewType deserialize(final JsonParser p, final DeserializationContext ctxt)
+				throws IOException, JsonProcessingException {
+			final String value = p.getValueAsString();
+			return "arangosearch".equals(value) ? ViewType.ARANGO_SEARCH : ViewType.valueOf(value.toUpperCase());
 		}
 	};
-
-	public static final VPackDeserializer<ArangoSearchProperties> ARANGO_SEARCH_PROPERTIES = new VPackDeserializer<ArangoSearchProperties>() {
+	public static final JsonDeserializer<ArangoSearchPropertiesEntity> ARANGO_SEARCH_PROPERTIES_ENTITY = new JsonDeserializer<ArangoSearchPropertiesEntity>() {
 		@Override
-		public ArangoSearchProperties deserialize(
-			final VPackSlice parent,
-			final VPackSlice vpack,
-			final VPackDeserializationContext context) throws VPackException {
+		public ArangoSearchPropertiesEntity deserialize(final JsonParser p, final DeserializationContext ctxt)
+				throws IOException, JsonProcessingException {
+
+			final JsonNode node = p.getCodec().readTree(p);
+			final String id = node.get("id").asText();
+			final String name = node.get("name").asText();
+			final ViewType viewType = node.get("type").traverse(ctxt.getParser().getCodec())
+					.readValueAs(ViewType.class);
+			final ViewEntity entity = new ViewEntity(id, name, viewType);
+
 			final ArangoSearchProperties properties = new ArangoSearchProperties();
-			final VPackSlice locale = vpack.get("locale");
-			if (locale.isString()) {
-				properties.setLocale(locale.getAsString());
+			final ArangoSearchPropertiesEntity result = new ArangoSearchPropertiesEntity(entity.getId(),
+					entity.getName(), entity.getType(), properties);
+
+			final JsonNode locale = node.get("locale");
+			if (locale != null && locale.isTextual()) {
+				properties.setLocale(locale.asText());
 			}
-			final VPackSlice commit = vpack.get("commit");
-			if (commit.isObject()) {
-				final VPackSlice commitIntervalMsec = commit.get("commitIntervalMsec");
-				if (commitIntervalMsec.isInteger()) {
-					properties.setCommitIntervalMsec(commitIntervalMsec.getAsLong());
+			final JsonNode commit = node.get("commit");
+			if (commit != null && commit.isObject()) {
+				final JsonNode commitIntervalMsec = commit.get("commitIntervalMsec");
+				if (commitIntervalMsec.isLong()) {
+					properties.setCommitIntervalMsec(commitIntervalMsec.asLong());
 				}
-				final VPackSlice cleanupIntervalStep = commit.get("cleanupIntervalStep");
-				if (cleanupIntervalStep.isInteger()) {
-					properties.setCleanupIntervalStep(cleanupIntervalStep.getAsLong());
+				final JsonNode cleanupIntervalStep = commit.get("cleanupIntervalStep");
+				if (cleanupIntervalStep != null && cleanupIntervalStep.isLong()) {
+					properties.setCleanupIntervalStep(cleanupIntervalStep.asLong());
 				}
-				final VPackSlice consolidate = commit.get("consolidate");
-				if (consolidate.isObject()) {
+				final JsonNode consolidate = commit.get("consolidate");
+				if (consolidate != null && consolidate.isObject()) {
 					for (final ConsolidateType type : ConsolidateType.values()) {
-						final VPackSlice consolidateThreshold = consolidate.get(type.name().toLowerCase());
-						if (consolidateThreshold.isObject()) {
+						final JsonNode consolidateThreshold = consolidate.get(type.name().toLowerCase());
+						if (consolidateThreshold != null && consolidateThreshold.isObject()) {
 							final ConsolidateThreshold t = ConsolidateThreshold.of(type);
-							final VPackSlice threshold = consolidateThreshold.get("threshold");
-							if (threshold.isNumber()) {
-								t.threshold(threshold.getAsDouble());
+							final JsonNode threshold = consolidateThreshold.get("threshold");
+							if (threshold != null && threshold.isDouble()) {
+								t.threshold(threshold.asDouble());
 							}
-							final VPackSlice segmentThreshold = consolidateThreshold.get("segmentThreshold");
-							if (segmentThreshold.isInteger()) {
-								t.segmentThreshold(segmentThreshold.getAsLong());
+							final JsonNode segmentThreshold = consolidateThreshold.get("segmentThreshold");
+							if (segmentThreshold != null && segmentThreshold.isLong()) {
+								t.segmentThreshold(segmentThreshold.asLong());
 							}
 							properties.addThreshold(t);
 						}
@@ -251,35 +237,35 @@ public class VPackDeserializers {
 				}
 			}
 
-			final VPackSlice links = vpack.get("links");
-			if (links.isObject()) {
-				final Iterator<Entry<String, VPackSlice>> collectionIterator = links.objectIterator();
+			final JsonNode links = node.get("links");
+			if (links != null && links.isObject()) {
+				final Iterator<Entry<String, JsonNode>> collectionIterator = links.fields();
 				for (; collectionIterator.hasNext();) {
-					final Entry<String, VPackSlice> entry = collectionIterator.next();
-					final VPackSlice value = entry.getValue();
+					final Entry<String, JsonNode> entry = collectionIterator.next();
+					final JsonNode value = entry.getValue();
 					final CollectionLink link = CollectionLink.on(entry.getKey());
-					final VPackSlice analyzers = value.get("analyzers");
-					if (analyzers.isArray()) {
-						final Iterator<VPackSlice> analyzerIterator = analyzers.arrayIterator();
+					final JsonNode analyzers = value.get("analyzers");
+					if (analyzers != null && analyzers.isArray()) {
+						final Iterator<JsonNode> analyzerIterator = analyzers.iterator();
 						for (; analyzerIterator.hasNext();) {
-							link.analyzers(analyzerIterator.next().getAsString());
+							link.analyzers(analyzerIterator.next().asText());
 						}
 					}
-					final VPackSlice includeAllFields = value.get("includeAllFields");
-					if (includeAllFields.isBoolean()) {
-						link.includeAllFields(includeAllFields.getAsBoolean());
+					final JsonNode includeAllFields = value.get("includeAllFields");
+					if (includeAllFields != null && includeAllFields.isBoolean()) {
+						link.includeAllFields(includeAllFields.asBoolean());
 					}
-					final VPackSlice trackListPositions = value.get("trackListPositions");
-					if (trackListPositions.isBoolean()) {
-						link.trackListPositions(trackListPositions.getAsBoolean());
+					final JsonNode trackListPositions = value.get("trackListPositions");
+					if (trackListPositions != null && trackListPositions.isBoolean()) {
+						link.trackListPositions(trackListPositions.asBoolean());
 					}
-					final VPackSlice storeValues = value.get("storeValues");
-					if (storeValues.isString()) {
-						link.storeValues(StoreValuesType.valueOf(storeValues.getAsString().toUpperCase()));
+					final JsonNode storeValues = value.get("storeValues");
+					if (storeValues != null && storeValues.isTextual()) {
+						link.storeValues(StoreValuesType.valueOf(storeValues.asText().toUpperCase()));
 					}
-					final VPackSlice fields = value.get("fields");
-					if (fields.isObject()) {
-						final Iterator<Entry<String, VPackSlice>> fieldsIterator = fields.objectIterator();
+					final JsonNode fields = value.get("fields");
+					if (fields != null && fields.isObject()) {
+						final Iterator<Entry<String, JsonNode>> fieldsIterator = fields.fields();
 						for (; fieldsIterator.hasNext();) {
 							link.fields(deserializeField(fieldsIterator.next()));
 						}
@@ -287,54 +273,40 @@ public class VPackDeserializers {
 					properties.addLink(link);
 				}
 			}
-			return properties;
+			return result;
 		}
 	};
 
-	protected static FieldLink deserializeField(final Entry<String, VPackSlice> field) {
-		final VPackSlice value = field.getValue();
-		final FieldLink link = FieldLink.on(field.getKey());
-		final VPackSlice analyzers = value.get("analyzers");
-		if (analyzers.isArray()) {
-			final Iterator<VPackSlice> analyzerIterator = analyzers.arrayIterator();
+	protected static FieldLink deserializeField(final Entry<String, JsonNode> entry) {
+		final JsonNode value = entry.getValue();
+		final FieldLink link = FieldLink.on(entry.getKey());
+		final JsonNode analyzers = value.get("analyzers");
+		if (analyzers != null && analyzers.isArray()) {
+			final Iterator<JsonNode> analyzerIterator = analyzers.iterator();
 			for (; analyzerIterator.hasNext();) {
-				link.analyzers(analyzerIterator.next().getAsString());
+				link.analyzers(analyzerIterator.next().asText());
 			}
 		}
-		final VPackSlice includeAllFields = value.get("includeAllFields");
-		if (includeAllFields.isBoolean()) {
-			link.includeAllFields(includeAllFields.getAsBoolean());
+		final JsonNode includeAllFields = value.get("includeAllFields");
+		if (includeAllFields != null && includeAllFields.isBoolean()) {
+			link.includeAllFields(includeAllFields.asBoolean());
 		}
-		final VPackSlice trackListPositions = value.get("trackListPositions");
-		if (trackListPositions.isBoolean()) {
-			link.trackListPositions(trackListPositions.getAsBoolean());
+		final JsonNode trackListPositions = value.get("trackListPositions");
+		if (trackListPositions != null && trackListPositions.isBoolean()) {
+			link.trackListPositions(trackListPositions.asBoolean());
 		}
-		final VPackSlice storeValues = value.get("storeValues");
-		if (storeValues.isString()) {
-			link.storeValues(StoreValuesType.valueOf(storeValues.getAsString().toUpperCase()));
+		final JsonNode storeValues = value.get("storeValues");
+		if (storeValues != null && storeValues.isTextual()) {
+			link.storeValues(StoreValuesType.valueOf(storeValues.asText().toUpperCase()));
 		}
-		final VPackSlice fields = value.get("fields");
-		if (fields.isObject()) {
-			final Iterator<Entry<String, VPackSlice>> fieldsIterator = fields.objectIterator();
+		final JsonNode fields = value.get("fields");
+		if (fields != null && fields.isObject()) {
+			final Iterator<Entry<String, JsonNode>> fieldsIterator = fields.fields();
 			for (; fieldsIterator.hasNext();) {
 				link.fields(deserializeField(fieldsIterator.next()));
 			}
 		}
 		return link;
 	}
-
-	public static final VPackDeserializer<ArangoSearchPropertiesEntity> ARANGO_SEARCH_PROPERTIES_ENTITY = new VPackDeserializer<ArangoSearchPropertiesEntity>() {
-		@Override
-		public ArangoSearchPropertiesEntity deserialize(
-			final VPackSlice parent,
-			final VPackSlice vpack,
-			final VPackDeserializationContext context) throws VPackException {
-			final ViewEntity entity = context.deserialize(vpack, ViewEntity.class);
-			final ArangoSearchProperties properties = context.deserialize(vpack, ArangoSearchProperties.class);
-			final ArangoSearchPropertiesEntity result = new ArangoSearchPropertiesEntity(entity.getId(),
-					entity.getName(), entity.getType(), properties);
-			return result;
-		}
-	};
 
 }

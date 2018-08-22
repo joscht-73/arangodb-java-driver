@@ -27,11 +27,11 @@ import com.arangodb.entity.GraphEntity;
 import com.arangodb.internal.ArangoExecutor.ResponseDeserializer;
 import com.arangodb.model.OptionsBuilder;
 import com.arangodb.model.VertexCollectionCreateOptions;
-import com.arangodb.velocypack.Type;
 import com.arangodb.velocypack.exception.VPackException;
 import com.arangodb.velocystream.Request;
 import com.arangodb.velocystream.RequestType;
 import com.arangodb.velocystream.Response;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 /**
  * @author Mark Vollmary
@@ -82,8 +82,9 @@ public abstract class InternalArangoGraph<A extends InternalArangoDB<E>, D exten
 		return new ResponseDeserializer<Collection<String>>() {
 			@Override
 			public Collection<String> deserialize(final Response response) throws VPackException {
-				return util().deserialize(response.getBody().get("collections"), new Type<Collection<String>>() {
-				}.getType());
+				return util().deserialize(response.getBody().get("collections"),
+					new TypeReference<Collection<String>>() {
+					}.getType());
 			}
 		};
 	}
@@ -106,8 +107,9 @@ public abstract class InternalArangoGraph<A extends InternalArangoDB<E>, D exten
 		return new ResponseDeserializer<Collection<String>>() {
 			@Override
 			public Collection<String> deserialize(final Response response) throws VPackException {
-				return util().deserialize(response.getBody().get("collections"), new Type<Collection<String>>() {
-				}.getType());
+				return util().deserialize(response.getBody().get("collections"),
+					new TypeReference<Collection<String>>() {
+					}.getType());
 			}
 		};
 	}

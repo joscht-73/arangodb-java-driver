@@ -42,10 +42,6 @@ import com.arangodb.internal.http.HttpCommunication;
 import com.arangodb.internal.net.HostHandle;
 import com.arangodb.internal.net.HostHandler;
 import com.arangodb.internal.net.HostResolver;
-import com.arangodb.internal.util.ArangoDeserializerImpl;
-import com.arangodb.internal.util.ArangoSerializationFactory;
-import com.arangodb.internal.util.ArangoSerializerImpl;
-import com.arangodb.internal.util.DefaultArangoSerialization;
 import com.arangodb.internal.velocystream.VstCommunicationSync;
 import com.arangodb.model.LogOptions;
 import com.arangodb.model.UserCreateOptions;
@@ -54,7 +50,6 @@ import com.arangodb.util.ArangoCursorInitializer;
 import com.arangodb.util.ArangoDeserializer;
 import com.arangodb.util.ArangoSerialization;
 import com.arangodb.util.ArangoSerializer;
-import com.arangodb.velocypack.VPack;
 import com.arangodb.velocypack.VPackAnnotationFieldFilter;
 import com.arangodb.velocypack.VPackAnnotationFieldNaming;
 import com.arangodb.velocypack.VPackDeserializer;
@@ -62,7 +57,6 @@ import com.arangodb.velocypack.VPackInstanceCreator;
 import com.arangodb.velocypack.VPackJsonDeserializer;
 import com.arangodb.velocypack.VPackJsonSerializer;
 import com.arangodb.velocypack.VPackModule;
-import com.arangodb.velocypack.VPackParser;
 import com.arangodb.velocypack.VPackParserModule;
 import com.arangodb.velocypack.VPackSerializer;
 import com.arangodb.velocypack.ValueType;
@@ -300,7 +294,7 @@ public interface ArangoDB extends ArangoSerializationAccessor {
 		 * @return {@link ArangoDB.Builder}
 		 */
 		public <T> Builder registerSerializer(final Class<T> clazz, final VPackSerializer<T> serializer) {
-			vpackBuilder.registerSerializer(clazz, serializer);
+			// vpackBuilder.registerSerializer(clazz, serializer);
 			return this;
 		}
 
@@ -318,7 +312,7 @@ public interface ArangoDB extends ArangoSerializationAccessor {
 		 * @return {@link ArangoDB.Builder}
 		 */
 		public <T> Builder registerEnclosingSerializer(final Class<T> clazz, final VPackSerializer<T> serializer) {
-			vpackBuilder.registerEnclosingSerializer(clazz, serializer);
+			// vpackBuilder.registerEnclosingSerializer(clazz, serializer);
 			return this;
 		}
 
@@ -336,7 +330,7 @@ public interface ArangoDB extends ArangoSerializationAccessor {
 		 * @return {@link ArangoDB.Builder}
 		 */
 		public <T> Builder registerDeserializer(final Class<T> clazz, final VPackDeserializer<T> deserializer) {
-			vpackBuilder.registerDeserializer(clazz, deserializer);
+			// vpackBuilder.registerDeserializer(clazz, deserializer);
 			return this;
 		}
 
@@ -354,7 +348,7 @@ public interface ArangoDB extends ArangoSerializationAccessor {
 		 * @return {@link ArangoDB.Builder}
 		 */
 		public <T> Builder registerInstanceCreator(final Class<T> clazz, final VPackInstanceCreator<T> creator) {
-			vpackBuilder.registerInstanceCreator(clazz, creator);
+			// vpackBuilder.registerInstanceCreator(clazz, creator);
 			return this;
 		}
 
@@ -372,7 +366,7 @@ public interface ArangoDB extends ArangoSerializationAccessor {
 		 * @return {@link ArangoDB.Builder}
 		 */
 		public Builder registerJsonDeserializer(final ValueType type, final VPackJsonDeserializer deserializer) {
-			vpackParserBuilder.registerDeserializer(type, deserializer);
+			// vpackParserBuilder.registerDeserializer(type, deserializer);
 			return this;
 		}
 
@@ -394,7 +388,7 @@ public interface ArangoDB extends ArangoSerializationAccessor {
 			final String attribute,
 			final ValueType type,
 			final VPackJsonDeserializer deserializer) {
-			vpackParserBuilder.registerDeserializer(attribute, type, deserializer);
+			// vpackParserBuilder.registerDeserializer(attribute, type, deserializer);
 			return this;
 		}
 
@@ -412,7 +406,7 @@ public interface ArangoDB extends ArangoSerializationAccessor {
 		 * @return {@link ArangoDB.Builder}
 		 */
 		public <T> Builder registerJsonSerializer(final Class<T> clazz, final VPackJsonSerializer<T> serializer) {
-			vpackParserBuilder.registerSerializer(clazz, serializer);
+			// vpackParserBuilder.registerSerializer(clazz, serializer);
 			return this;
 		}
 
@@ -434,7 +428,7 @@ public interface ArangoDB extends ArangoSerializationAccessor {
 			final String attribute,
 			final Class<T> clazz,
 			final VPackJsonSerializer<T> serializer) {
-			vpackParserBuilder.registerSerializer(attribute, clazz, serializer);
+			// vpackParserBuilder.registerSerializer(attribute, clazz, serializer);
 			return this;
 		}
 
@@ -454,7 +448,7 @@ public interface ArangoDB extends ArangoSerializationAccessor {
 		public <A extends Annotation> Builder annotationFieldFilter(
 			final Class<A> type,
 			final VPackAnnotationFieldFilter<A> fieldFilter) {
-			vpackBuilder.annotationFieldFilter(type, fieldFilter);
+			// vpackBuilder.annotationFieldFilter(type, fieldFilter);
 			return this;
 		}
 
@@ -474,7 +468,7 @@ public interface ArangoDB extends ArangoSerializationAccessor {
 		public <A extends Annotation> Builder annotationFieldNaming(
 			final Class<A> type,
 			final VPackAnnotationFieldNaming<A> fieldNaming) {
-			vpackBuilder.annotationFieldNaming(type, fieldNaming);
+			// vpackBuilder.annotationFieldNaming(type, fieldNaming);
 			return this;
 		}
 
@@ -490,7 +484,7 @@ public interface ArangoDB extends ArangoSerializationAccessor {
 		 * @return {@link ArangoDB.Builder}
 		 */
 		public Builder registerModule(final VPackModule module) {
-			vpackBuilder.registerModule(module);
+			// vpackBuilder.registerModule(module);
 			return this;
 		}
 
@@ -506,7 +500,7 @@ public interface ArangoDB extends ArangoSerializationAccessor {
 		 * @return {@link ArangoDB.Builder}
 		 */
 		public Builder registerModules(final VPackModule... modules) {
-			vpackBuilder.registerModules(modules);
+			// vpackBuilder.registerModules(modules);
 			return this;
 		}
 
@@ -522,7 +516,7 @@ public interface ArangoDB extends ArangoSerializationAccessor {
 		 * @return {@link ArangoDB.Builder}
 		 */
 		public Builder registerJsonModule(final VPackParserModule module) {
-			vpackParserBuilder.registerModule(module);
+			// vpackParserBuilder.registerModule(module);
 			return this;
 		}
 
@@ -538,7 +532,7 @@ public interface ArangoDB extends ArangoSerializationAccessor {
 		 * @return {@link ArangoDB.Builder}
 		 */
 		public Builder registerJsonModules(final VPackParserModule... modules) {
-			vpackParserBuilder.registerModules(modules);
+			// vpackParserBuilder.registerModules(modules);
 			return this;
 		}
 
@@ -600,17 +594,6 @@ public interface ArangoDB extends ArangoSerializationAccessor {
 			if (hosts.isEmpty()) {
 				hosts.add(host);
 			}
-			final VPack vpacker = vpackBuilder.serializeNullValues(false).build();
-			final VPack vpackerNull = vpackBuilder.serializeNullValues(true).build();
-			final VPackParser vpackParser = vpackParserBuilder.build();
-			final ArangoSerializer serializerTemp = serializer != null ? serializer
-					: new ArangoSerializerImpl(vpacker, vpackerNull, vpackParser);
-			final ArangoDeserializer deserializerTemp = deserializer != null ? deserializer
-					: new ArangoDeserializerImpl(vpackerNull, vpackParser);
-			final DefaultArangoSerialization internal = new DefaultArangoSerialization(serializerTemp,
-					deserializerTemp);
-			final ArangoSerialization custom = customSerializer != null ? customSerializer : internal;
-			final ArangoSerializationFactory util = new ArangoSerializationFactory(internal, custom);
 
 			final HostResolver hostResolver = createHostResolver();
 			final HostHandler hostHandler = createHostHandler(hostResolver);
@@ -619,9 +602,9 @@ public interface ArangoDB extends ArangoSerializationAccessor {
 							.useSsl(useSsl).sslContext(sslContext).chunksize(chunksize).maxConnections(maxConnections)
 							.connectionTtl(connectionTtl),
 					new HttpCommunication.Builder(hostHandler, protocol).timeout(timeout).user(user).password(password)
-							.useSsl(useSsl).sslContext(sslContext).maxConnections(maxConnections)
-							.connectionTtl(connectionTtl),
-					util, protocol, hostResolver, new ArangoContext());
+							.useSsl(useSsl).sslContext(sslContext).maxConnections(maxConnections).connectionTtl(
+								connectionTtl),
+					customSerializer, protocol, hostResolver, new ArangoContext());
 		}
 
 	}

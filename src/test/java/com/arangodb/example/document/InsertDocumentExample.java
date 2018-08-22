@@ -48,7 +48,7 @@ public class InsertDocumentExample extends ExampleBase {
 	@Test
 	public void insertBaseDocument() {
 		final BaseDocument value = new BaseDocument();
-		value.addAttribute("foo", "bar");
+		value.put("foo", "bar");
 		final DocumentCreateEntity<BaseDocument> doc = collection.insertDocument(value);
 		assertThat(doc.getKey(), is(notNullValue()));
 	}

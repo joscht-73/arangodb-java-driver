@@ -65,8 +65,8 @@ import com.arangodb.model.TransactionOptions;
 import com.arangodb.model.TraversalOptions;
 import com.arangodb.model.arangosearch.ArangoSearchCreateOptions;
 import com.arangodb.util.ArangoCursorInitializer;
-import com.arangodb.velocypack.Type;
 import com.arangodb.velocystream.Request;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 /**
  * @author Mark Vollmary
@@ -238,7 +238,7 @@ public class ArangoDatabaseImpl extends InternalArangoDatabase<ArangoDBImpl, Ara
 			}
 		};
 		return cursorInitializer != null ? cursorInitializer.createInstance(this, execute, type, result)
-				: new ArangoCursorImpl<T>(this, execute, type, result);
+				: new ArangoCursorImpl<>(this, execute, type, result);
 	}
 
 	@Override
@@ -283,13 +283,13 @@ public class ArangoDatabaseImpl extends InternalArangoDatabase<ArangoDBImpl, Ara
 
 	@Override
 	public Collection<QueryEntity> getCurrentlyRunningQueries() throws ArangoDBException {
-		return executor.execute(getCurrentlyRunningQueriesRequest(), new Type<Collection<QueryEntity>>() {
+		return executor.execute(getCurrentlyRunningQueriesRequest(), new TypeReference<Collection<QueryEntity>>() {
 		}.getType());
 	}
 
 	@Override
 	public Collection<QueryEntity> getSlowQueries() throws ArangoDBException {
-		return executor.execute(getSlowQueriesRequest(), new Type<Collection<QueryEntity>>() {
+		return executor.execute(getSlowQueriesRequest(), new TypeReference<Collection<QueryEntity>>() {
 		}.getType());
 	}
 

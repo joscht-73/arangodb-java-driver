@@ -38,7 +38,6 @@ import com.arangodb.entity.TraversalEntity;
 import com.arangodb.entity.ViewEntity;
 import com.arangodb.entity.ViewType;
 import com.arangodb.internal.ArangoExecutor.ResponseDeserializer;
-import com.arangodb.internal.util.ArangoSerializationFactory.Serializer;
 import com.arangodb.model.AqlFunctionCreateOptions;
 import com.arangodb.model.AqlFunctionDeleteOptions;
 import com.arangodb.model.AqlFunctionGetOptions;
@@ -56,12 +55,12 @@ import com.arangodb.model.ViewCreateOptions;
 import com.arangodb.model.arangosearch.ArangoSearchCreateOptions;
 import com.arangodb.model.arangosearch.ArangoSearchOptionsBuilder;
 import com.arangodb.util.ArangoSerializer;
-import com.arangodb.velocypack.Type;
 import com.arangodb.velocypack.VPackSlice;
 import com.arangodb.velocypack.exception.VPackException;
 import com.arangodb.velocystream.Request;
 import com.arangodb.velocystream.RequestType;
 import com.arangodb.velocystream.Response;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 /**
  * @author Mark Vollmary
@@ -133,7 +132,7 @@ public abstract class InternalArangoDatabase<A extends InternalArangoDB<E>, E ex
 			@Override
 			public Collection<CollectionEntity> deserialize(final Response response) throws VPackException {
 				final VPackSlice result = response.getBody().get(ArangoResponseField.RESULT);
-				return util().deserialize(result, new Type<Collection<CollectionEntity>>() {
+				return util().deserialize(result, new TypeReference<Collection<CollectionEntity>>() {
 				}.getType());
 			}
 		};
@@ -303,7 +302,7 @@ public abstract class InternalArangoDatabase<A extends InternalArangoDB<E>, E ex
 				// compatibility with ArangoDB < 3.4
 				// https://docs.arangodb.com/devel/Manual/ReleaseNotes/UpgradingChanges34.html
 				final VPackSlice result = body.isArray() ? body : body.get(ArangoResponseField.RESULT);
-				return util().deserialize(result, new Type<Collection<AqlFunctionEntity>>() {
+				return util().deserialize(result, new TypeReference<Collection<AqlFunctionEntity>>() {
 				}.getType());
 			}
 		};
@@ -334,8 +333,9 @@ public abstract class InternalArangoDatabase<A extends InternalArangoDB<E>, E ex
 		return new ResponseDeserializer<Collection<GraphEntity>>() {
 			@Override
 			public Collection<GraphEntity> deserialize(final Response response) throws VPackException {
-				return util().deserialize(response.getBody().get("graphs"), new Type<Collection<GraphEntity>>() {
-				}.getType());
+				return util().deserialize(response.getBody().get("graphs"),
+					new TypeReference<Collection<GraphEntity>>() {
+					}.getType());
 			}
 		};
 	}
@@ -353,7 +353,7 @@ public abstract class InternalArangoDatabase<A extends InternalArangoDB<E>, E ex
 				if (body != null) {
 					final VPackSlice result = body.get(ArangoResponseField.RESULT);
 					if (!result.isNone() && !result.isNull()) {
-						return util(Serializer.CUSTOM).deserialize(result, type);
+						return util().deserialize(result, type);
 					}
 				}
 				return null;
@@ -386,13 +386,13 @@ public abstract class InternalArangoDatabase<A extends InternalArangoDB<E>, E ex
 		return new ResponseDeserializer<TraversalEntity<V, E>>() {
 			@Override
 			public TraversalEntity<V, E> deserialize(final Response response) throws VPackException {
-				final TraversalEntity<V, E> result = new TraversalEntity<V, E>();
+				final TraversalEntity<V, E> result = new TraversalEntity<>();
 				final VPackSlice visited = response.getBody().get(ArangoResponseField.RESULT).get("visited");
 				result.setVertices(deserializeVertices(vertexClass, visited));
 
-				final Collection<PathEntity<V, E>> paths = new ArrayList<PathEntity<V, E>>();
+				final Collection<PathEntity<V, E>> paths = new ArrayList<>();
 				for (final Iterator<VPackSlice> iterator = visited.get("paths").arrayIterator(); iterator.hasNext();) {
-					final PathEntity<V, E> path = new PathEntity<V, E>();
+					final PathEntity<V, E> path = new PathEntity<>();
 					final VPackSlice next = iterator.next();
 					path.setEdges(deserializeEdges(edgeClass, next));
 					path.setVertices(deserializeVertices(vertexClass, next));
@@ -407,9 +407,9 @@ public abstract class InternalArangoDatabase<A extends InternalArangoDB<E>, E ex
 	@SuppressWarnings("unchecked")
 	protected <V> Collection<V> deserializeVertices(final Class<V> vertexClass, final VPackSlice vpack)
 			throws VPackException {
-		final Collection<V> vertices = new ArrayList<V>();
+		final Collection<V> vertices = new ArrayList<>();
 		for (final Iterator<VPackSlice> iterator = vpack.get("vertices").arrayIterator(); iterator.hasNext();) {
-			vertices.add((V) util(Serializer.CUSTOM).deserialize(iterator.next(), vertexClass));
+			vertices.add((V) util().deserialize(iterator.next(), vertexClass));
 		}
 		return vertices;
 	}
@@ -417,9 +417,9 @@ public abstract class InternalArangoDatabase<A extends InternalArangoDB<E>, E ex
 	@SuppressWarnings({ "hiding", "unchecked" })
 	protected <E> Collection<E> deserializeEdges(final Class<E> edgeClass, final VPackSlice next)
 			throws VPackException {
-		final Collection<E> edges = new ArrayList<E>();
+		final Collection<E> edges = new ArrayList<>();
 		for (final Iterator<VPackSlice> iteratorEdge = next.get("edges").arrayIterator(); iteratorEdge.hasNext();) {
-			edges.add((E) util(Serializer.CUSTOM).deserialize(iteratorEdge.next(), edgeClass));
+			edges.add((E) util().deserialize(iteratorEdge.next(), edgeClass));
 		}
 		return edges;
 	}
@@ -437,7 +437,7 @@ public abstract class InternalArangoDatabase<A extends InternalArangoDB<E>, E ex
 			@Override
 			public Collection<ViewEntity> deserialize(final Response response) throws VPackException {
 				final VPackSlice result = response.getBody().get(ArangoResponseField.RESULT);
-				return util().deserialize(result, new Type<Collection<ViewEntity>>() {
+				return util().deserialize(result, new TypeReference<Collection<ViewEntity>>() {
 				}.getType());
 			}
 		};

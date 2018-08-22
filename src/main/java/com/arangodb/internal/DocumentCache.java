@@ -31,25 +31,27 @@ import java.util.Map.Entry;
 
 import com.arangodb.ArangoDBException;
 import com.arangodb.entity.DocumentField;
-import com.arangodb.entity.DocumentField.Type;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @author Mark Vollmary
  *
  */
+@SuppressWarnings("deprecation")
 public class DocumentCache {
 
-	private final Map<Class<?>, Map<DocumentField.Type, Field>> cache;
+	private static final Collection<String> FIELDS = Arrays.asList("_id", "_key", "_rev", "_from", "_to");
+	private final Map<Class<?>, Map<String, Field>> cache;
 
 	public DocumentCache() {
 		super();
-		cache = new HashMap<Class<?>, Map<Type, Field>>();
+		cache = new HashMap<>();
 	}
 
-	public void setValues(final Object doc, final Map<DocumentField.Type, String> values) throws ArangoDBException {
+	public void setValues(final Object doc, final Map<String, String> values) throws ArangoDBException {
 		try {
-			final Map<DocumentField.Type, Field> fields = getFields(doc.getClass());
-			for (final Entry<DocumentField.Type, String> value : values.entrySet()) {
+			final Map<String, Field> fields = getFields(doc.getClass());
+			for (final Entry<String, String> value : values.entrySet()) {
 				final Field field = fields.get(value.getKey());
 				if (field != null) {
 					field.set(doc, value.getValue());
@@ -62,8 +64,8 @@ public class DocumentCache {
 		}
 	}
 
-	private Map<DocumentField.Type, Field> getFields(final Class<?> clazz) {
-		Map<DocumentField.Type, Field> fields = new HashMap<DocumentField.Type, Field>();
+	private Map<String, Field> getFields(final Class<?> clazz) {
+		Map<String, Field> fields = new HashMap<>();
 		if (!isTypeRestricted(clazz)) {
 			fields = cache.get(clazz);
 			if (fields == null) {
@@ -78,11 +80,10 @@ public class DocumentCache {
 		return Map.class.isAssignableFrom(type) || Collection.class.isAssignableFrom(type);
 	}
 
-	private Map<DocumentField.Type, Field> createFields(final Class<?> clazz) {
-		final Map<DocumentField.Type, Field> fields = new HashMap<DocumentField.Type, Field>();
+	private Map<String, Field> createFields(final Class<?> clazz) {
+		final Map<String, Field> fields = new HashMap<>();
 		Class<?> tmp = clazz;
-		final Collection<DocumentField.Type> values = new ArrayList<DocumentField.Type>(
-				Arrays.asList(DocumentField.Type.values()));
+		final Collection<String> values = new ArrayList<>(FIELDS);
 		while (tmp != null && tmp != Object.class && values.size() > 0) {
 			final Field[] declaredFields = tmp.getDeclaredFields();
 			for (int i = 0; i < declaredFields.length && values.size() > 0; i++) {
@@ -93,18 +94,29 @@ public class DocumentCache {
 		return fields;
 	}
 
-	private void findAnnotation(
-		final Collection<Type> values,
-		final Map<DocumentField.Type, Field> fields,
-		final Field field) {
-		final DocumentField annotation = field.getAnnotation(DocumentField.class);
-		if (annotation != null && !field.isSynthetic() && !Modifier.isStatic(field.getModifiers())
-				&& String.class.isAssignableFrom(field.getType())) {
-			final Type value = annotation.value();
-			if (values.contains(value)) {
-				field.setAccessible(true);
-				fields.put(value, field);
-				values.remove(value);
+	private void findAnnotation(final Collection<String> values, final Map<String, Field> fields, final Field field) {
+		{
+			final JsonProperty annotation = field.getAnnotation(JsonProperty.class);
+			if (annotation != null && !field.isSynthetic() && !Modifier.isStatic(field.getModifiers())
+					&& String.class.isAssignableFrom(field.getType())) {
+				final String value = annotation.value();
+				if (values.contains(value)) {
+					field.setAccessible(true);
+					fields.put(value, field);
+					values.remove(value);
+				}
+			}
+		}
+		{
+			final DocumentField annotation = field.getAnnotation(DocumentField.class);
+			if (annotation != null && !field.isSynthetic() && !Modifier.isStatic(field.getModifiers())
+					&& String.class.isAssignableFrom(field.getType())) {
+				final String value = annotation.value().getSerializeName();
+				if (values.contains(value)) {
+					field.setAccessible(true);
+					fields.put(value, field);
+					values.remove(value);
+				}
 			}
 		}
 	}
