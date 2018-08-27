@@ -35,12 +35,14 @@ import com.arangodb.entity.ReplicationFactor;
 import com.arangodb.entity.ViewType;
 import com.arangodb.entity.arangosearch.ArangoSearchProperties;
 import com.arangodb.entity.arangosearch.CollectionLink;
-import com.arangodb.entity.arangosearch.ConsolidateThreshold;
+import com.arangodb.entity.arangosearch.ConsolidateType;
+import com.arangodb.entity.arangosearch.ConsolidationPolicy;
 import com.arangodb.entity.arangosearch.FieldLink;
 import com.arangodb.entity.arangosearch.StoreValuesType;
 import com.arangodb.internal.velocystream.internal.AuthenticationRequest;
 import com.arangodb.model.TraversalOptions;
 import com.arangodb.model.TraversalOptions.Order;
+import com.arangodb.model.arangosearch.ArangoSearchPropertiesOptions;
 import com.arangodb.velocystream.Request;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
@@ -184,53 +186,39 @@ public class VPackSerializers {
 		}
 	};
 
+	public static final JsonSerializer<ArangoSearchPropertiesOptions> ARANGO_SEARCH_PROPERTIES_OPTIONS = new JsonSerializer<ArangoSearchPropertiesOptions>() {
+		@Override
+		public void serialize(
+			final ArangoSearchPropertiesOptions value,
+			final JsonGenerator gen,
+			final SerializerProvider serializers) throws IOException {
+			gen.writeStartObject();
+			gen.writeObject(value.getProperties());
+			gen.writeEndObject();
+		}
+	};
+
 	public static final JsonSerializer<ArangoSearchProperties> ARANGO_SEARCH_PROPERTIES = new JsonSerializer<ArangoSearchProperties>() {
 		@Override
 		public void serialize(
 			final ArangoSearchProperties value,
 			final JsonGenerator gen,
 			final SerializerProvider serializers) throws IOException {
-			final String locale = value.getLocale();
-			if (locale != null) {
-				gen.writeFieldName("locale");
-				gen.writeString(locale);
-			}
-			final Long commitIntervalMsec = value.getCommitIntervalMsec();
-			final Long cleanupIntervalStep = value.getCleanupIntervalStep();
-			final Collection<ConsolidateThreshold> thresholds = value.getThresholds();
 
-			if (commitIntervalMsec != null || cleanupIntervalStep != null || !thresholds.isEmpty()) {
-				gen.writeFieldName("commit");
-				gen.writeStartObject();
-				if (commitIntervalMsec != null) {
-					gen.writeFieldName("commitIntervalMsec");
-					gen.writeNumber(commitIntervalMsec);
-				}
-				if (cleanupIntervalStep != null) {
-					gen.writeFieldName("cleanupIntervalStep");
-					gen.writeNumber(cleanupIntervalStep);
-				}
-				if (!thresholds.isEmpty()) {
-					gen.writeFieldName("consolidate");
-					gen.writeStartObject();
-					for (final ConsolidateThreshold consolidateThreshold : thresholds) {
-						gen.writeFieldName(consolidateThreshold.getType().name().toLowerCase());
-						gen.writeStartObject();
-						final Double threshold = consolidateThreshold.getThreshold();
-						if (threshold != null) {
-							gen.writeFieldName("threshold");
-							gen.writeNumber(threshold);
-						}
-						final Long segmentThreshold = consolidateThreshold.getSegmentThreshold();
-						if (segmentThreshold != null) {
-							gen.writeFieldName("segmentThreshold");
-							gen.writeNumber(segmentThreshold);
-						}
-						gen.writeEndObject();
-					}
-					gen.writeEndObject();
-				}
-				gen.writeEndObject();
+			final Long consolidationIntervalMsec = value.getConsolidationIntervalMsec();
+			if (consolidationIntervalMsec != null) {
+				gen.writeFieldName("consolidationIntervalMsec");
+				gen.writeNumber(consolidationIntervalMsec);
+			}
+			final Long cleanupIntervalStep = value.getCleanupIntervalStep();
+			if (cleanupIntervalStep != null) {
+				gen.writeFieldName("cleanupIntervalStep");
+				gen.writeNumber(cleanupIntervalStep);
+			}
+
+			final ConsolidationPolicy consolidationPolicy = value.getConsolidationPolicy();
+			if (consolidationPolicy != null) {
+				gen.writeObjectField("consolidationPolicy", consolidationPolicy);
 			}
 
 			final Collection<CollectionLink> links = value.getLinks();
@@ -311,4 +299,13 @@ public class VPackSerializers {
 		}
 	}
 
+	public static final JsonSerializer<ConsolidateType> CONSOLIDATE_TYPE = new JsonSerializer<ConsolidateType>() {
+		@Override
+		public void serialize(
+			final ConsolidateType value,
+			final JsonGenerator gen,
+			final SerializerProvider serializers) throws IOException {
+			gen.writeString(value.toString().toLowerCase());
+		}
+	};
 }

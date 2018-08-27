@@ -46,8 +46,8 @@ import com.arangodb.entity.ViewType;
 import com.arangodb.entity.arangosearch.ArangoSearchProperties;
 import com.arangodb.entity.arangosearch.ArangoSearchPropertiesEntity;
 import com.arangodb.entity.arangosearch.CollectionLink;
-import com.arangodb.entity.arangosearch.ConsolidateThreshold;
 import com.arangodb.entity.arangosearch.ConsolidateType;
+import com.arangodb.entity.arangosearch.ConsolidationPolicy;
 import com.arangodb.entity.arangosearch.FieldLink;
 import com.arangodb.entity.arangosearch.StoreValuesType;
 import com.arangodb.velocystream.Response;
@@ -187,6 +187,7 @@ public class VPackDeserializers {
 			return "arangosearch".equals(value) ? ViewType.ARANGO_SEARCH : ViewType.valueOf(value.toUpperCase());
 		}
 	};
+
 	public static final JsonDeserializer<ArangoSearchPropertiesEntity> ARANGO_SEARCH_PROPERTIES_ENTITY = new JsonDeserializer<ArangoSearchPropertiesEntity>() {
 		@Override
 		public ArangoSearchPropertiesEntity deserialize(final JsonParser p, final DeserializationContext ctxt)
@@ -203,40 +204,19 @@ public class VPackDeserializers {
 			final ArangoSearchPropertiesEntity result = new ArangoSearchPropertiesEntity(entity.getId(),
 					entity.getName(), entity.getType(), properties);
 
-			final JsonNode locale = node.get("locale");
-			if (locale != null && locale.isTextual()) {
-				properties.setLocale(locale.asText());
+			final JsonNode consolidationIntervalMsec = node.get("commitIntervalMsec");
+			if (consolidationIntervalMsec != null && consolidationIntervalMsec.isLong()) {
+				properties.setConsolidationIntervalMsec(consolidationIntervalMsec.asLong());
 			}
-			final JsonNode commit = node.get("commit");
-			if (commit != null && commit.isObject()) {
-				final JsonNode commitIntervalMsec = commit.get("commitIntervalMsec");
-				if (commitIntervalMsec.isLong()) {
-					properties.setCommitIntervalMsec(commitIntervalMsec.asLong());
-				}
-				final JsonNode cleanupIntervalStep = commit.get("cleanupIntervalStep");
-				if (cleanupIntervalStep != null && cleanupIntervalStep.isLong()) {
-					properties.setCleanupIntervalStep(cleanupIntervalStep.asLong());
-				}
-				final JsonNode consolidate = commit.get("consolidate");
-				if (consolidate != null && consolidate.isObject()) {
-					for (final ConsolidateType type : ConsolidateType.values()) {
-						final JsonNode consolidateThreshold = consolidate.get(type.name().toLowerCase());
-						if (consolidateThreshold != null && consolidateThreshold.isObject()) {
-							final ConsolidateThreshold t = ConsolidateThreshold.of(type);
-							final JsonNode threshold = consolidateThreshold.get("threshold");
-							if (threshold != null && threshold.isDouble()) {
-								t.threshold(threshold.asDouble());
-							}
-							final JsonNode segmentThreshold = consolidateThreshold.get("segmentThreshold");
-							if (segmentThreshold != null && segmentThreshold.isLong()) {
-								t.segmentThreshold(segmentThreshold.asLong());
-							}
-							properties.addThreshold(t);
-						}
-					}
-				}
+			final JsonNode cleanupIntervalStep = node.get("cleanupIntervalStep");
+			if (cleanupIntervalStep != null && cleanupIntervalStep.isLong()) {
+				properties.setCleanupIntervalStep(cleanupIntervalStep.asLong());
 			}
-
+			final JsonNode consolidationPolicy = node.get("consolidationPolicy");
+			if (consolidationPolicy != null && consolidationPolicy.isObject()) {
+				final JsonParser cp = consolidationPolicy.traverse(ctxt.getParser().getCodec());
+				properties.setConsolidationPolicy(cp.readValueAs(ConsolidationPolicy.class));
+			}
 			final JsonNode links = node.get("links");
 			if (links != null && links.isObject()) {
 				final Iterator<Entry<String, JsonNode>> collectionIterator = links.fields();
@@ -308,5 +288,28 @@ public class VPackDeserializers {
 		}
 		return link;
 	}
+
+	public static final JsonDeserializer<ConsolidationPolicy> CONSOLIDATE = new JsonDeserializer<ConsolidationPolicy>() {
+		@Override
+		public ConsolidationPolicy deserialize(final JsonParser p, final DeserializationContext ctxt)
+				throws IOException, JsonProcessingException {
+			final JsonNode node = p.getCodec().readTree(p);
+			final JsonNode type = node.get("type");
+			if (type != null && type.isTextual()) {
+				final ConsolidationPolicy consolidate = ConsolidationPolicy
+						.of(ConsolidateType.valueOf(type.asText().toUpperCase()));
+				final JsonNode threshold = node.get("threshold");
+				if (threshold != null && threshold.isNumber()) {
+					consolidate.threshold(threshold.asDouble());
+				}
+				final JsonNode segmentThreshold = node.get("segmentThreshold");
+				if (segmentThreshold != null && segmentThreshold.isNumber()) {
+					consolidate.segmentThreshold(segmentThreshold.asLong());
+				}
+				return consolidate;
+			}
+			return null;
+		}
+	};
 
 }

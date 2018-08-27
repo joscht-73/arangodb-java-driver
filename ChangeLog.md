@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ## [Unreleased]
 
+### Changed
+
+- applied API changes of ArangoSearch for ArangoDB release 3.4.0
+
 ## [4.7.0] - 2018-08-02
 
 ### Added

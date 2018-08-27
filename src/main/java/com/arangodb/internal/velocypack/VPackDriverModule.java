@@ -32,6 +32,8 @@ import com.arangodb.entity.ReplicationFactor;
 import com.arangodb.entity.ViewType;
 import com.arangodb.entity.arangosearch.ArangoSearchProperties;
 import com.arangodb.entity.arangosearch.ArangoSearchPropertiesEntity;
+import com.arangodb.entity.arangosearch.ConsolidateType;
+import com.arangodb.entity.arangosearch.ConsolidationPolicy;
 import com.arangodb.internal.velocystream.internal.AuthenticationRequest;
 import com.arangodb.model.TraversalOptions;
 import com.arangodb.velocystream.Request;
@@ -60,6 +62,7 @@ public class VPackDriverModule extends SimpleModule {
 		addSerializer(ReplicationFactor.class, VPackSerializers.REPLICATION_FACTOR);
 		addSerializer(ViewType.class, VPackSerializers.VIEW_TYPE);
 		addSerializer(ArangoSearchProperties.class, VPackSerializers.ARANGO_SEARCH_PROPERTIES);
+		addSerializer(ConsolidateType.class, VPackSerializers.CONSOLIDATE_TYPE);
 
 		addDeserializer(Response.class, VPackDeserializers.RESPONSE);
 		addDeserializer(CollectionType.class, VPackDeserializers.COLLECTION_TYPE);
@@ -74,6 +77,7 @@ public class VPackDriverModule extends SimpleModule {
 		addDeserializer(ReplicationFactor.class, VPackDeserializers.REPLICATION_FACTOR);
 		addDeserializer(ViewType.class, VPackDeserializers.VIEW_TYPE);
 		addDeserializer(ArangoSearchPropertiesEntity.class, VPackDeserializers.ARANGO_SEARCH_PROPERTIES_ENTITY);
+		addDeserializer(ConsolidationPolicy.class, VPackDeserializers.CONSOLIDATE);
 	}
 
 }

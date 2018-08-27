@@ -50,7 +50,6 @@ import com.arangodb.entity.AqlExecutionExplainEntity;
 import com.arangodb.entity.AqlExecutionExplainEntity.ExecutionPlan;
 import com.arangodb.entity.AqlFunctionEntity;
 import com.arangodb.entity.AqlParseEntity;
-import com.arangodb.entity.AqlParseEntity.AstNode;
 import com.arangodb.entity.ArangoDBVersion;
 import com.arangodb.entity.ArangoDBVersion.License;
 import com.arangodb.entity.BaseDocument;
@@ -297,7 +296,7 @@ public class ArangoDatabaseTest extends BaseTest {
 	public void getIndex() {
 		try {
 			db.createCollection(COLLECTION_NAME, null);
-			final Collection<String> fields = new ArrayList<String>();
+			final Collection<String> fields = new ArrayList<>();
 			fields.add("a");
 			final IndexEntity createResult = db.collection(COLLECTION_NAME).ensureHashIndex(fields, null);
 			final IndexEntity readResult = db.getIndex(createResult.getId());
@@ -312,7 +311,7 @@ public class ArangoDatabaseTest extends BaseTest {
 	public void deleteIndex() {
 		try {
 			db.createCollection(COLLECTION_NAME, null);
-			final Collection<String> fields = new ArrayList<String>();
+			final Collection<String> fields = new ArrayList<>();
 			fields.add("a");
 			final IndexEntity createResult = db.collection(COLLECTION_NAME).ensureHashIndex(fields, null);
 			final String id = db.deleteIndex(createResult.getId());
@@ -777,7 +776,7 @@ public class ArangoDatabaseTest extends BaseTest {
 				baseDocument.put("age", 20 + i);
 				db.collection(COLLECTION_NAME).insertDocument(baseDocument, null);
 			}
-			final Map<String, Object> bindVars = new HashMap<String, Object>();
+			final Map<String, Object> bindVars = new HashMap<>();
 			bindVars.put("@coll", COLLECTION_NAME);
 			bindVars.put("age", 25);
 
@@ -874,29 +873,6 @@ public class ArangoDatabaseTest extends BaseTest {
 		assertThat(parse.getBindVars(), is(empty()));
 		assertThat(parse.getCollections().size(), is(0));
 		assertThat(parse.getAst().size(), is(1));
-		final AstNode root = parse.getAst().iterator().next();
-		assertThat(root.getType(), is("root"));
-		assertThat(root.getName(), is(nullValue()));
-		assertThat(root.getSubNodes(), is(notNullValue()));
-		assertThat(root.getSubNodes().size(), is(2));
-		final Iterator<AstNode> iterator = root.getSubNodes().iterator();
-		final AstNode for_ = iterator.next();
-		assertThat(for_.getType(), is("for"));
-		assertThat(for_.getSubNodes(), is(notNullValue()));
-		assertThat(for_.getSubNodes().size(), is(2));
-		final Iterator<AstNode> iterator2 = for_.getSubNodes().iterator();
-		final AstNode first = iterator2.next();
-		assertThat(first.getType(), is("variable"));
-		assertThat(first.getName(), is("i"));
-		final AstNode second = iterator2.next();
-		assertThat(second.getType(), is("range"));
-		assertThat(second.getName(), is(nullValue()));
-		final AstNode return_ = iterator.next();
-		assertThat(return_.getType(), is("return"));
-		assertThat(return_.getSubNodes(), is(notNullValue()));
-		assertThat(return_.getSubNodes().size(), is(1));
-		assertThat(return_.getSubNodes().iterator().next().getType(), is("reference"));
-		assertThat(return_.getSubNodes().iterator().next().getName(), is("i"));
 	}
 
 	@Test
@@ -1149,7 +1125,7 @@ public class ArangoDatabaseTest extends BaseTest {
 
 	@Test
 	public void transactionCollection() {
-		final Collection<String> params = new ArrayList<String>();
+		final Collection<String> params = new ArrayList<>();
 		params.add("hello");
 		params.add("world");
 		final TransactionOptions options = new TransactionOptions().params(params);
