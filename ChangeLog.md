@@ -6,9 +6,81 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ## [Unreleased]
 
+## [5.0.4] - 2019-18-01
+
+### Fixed
+
+- fixed bug with multi document operations when using parameter `silent` (issue #241)
+
+## [5.0.3] - 2018-11-12
+
+### Fixed
+
+- adaption to changed ArangoSearch API
+
+## [5.0.2] - 2018-11-09
+
+### Added
+
+- added `ArangoGraph#drop(boolean dropCollections)`
+
 ### Changed
 
+- changed `ArangoDB#timeout` to also set the request timeout when using VelocyStream (issue #230)
+
+### Fixed
+
+- fixed compatibility of `ArangoCursor#filter` with Java 6
+- fixed replace-insert with `DocumentCreateOptions#overwrite(Boolean)` for `ArangoCollection#insertDocuments`
+- removed unused dependency
+
+## [5.0.1] - 2018-09-25
+
+### Fixed
+
+- fixed `ArangoCursor#next` when performing a dirty read
+- fixed connection stickiness
+
+## [5.0.0] - 2018-09-18
+
+### Added
+
+- added dirty read support ([reading from followers](https://docs.arangodb.com/current/Manual/Administration/ActiveFailover/#reading-from-follower))
+
+  - added option `AqlQueryOptions#allowDirtyRead` for `ArangoDatabase#query`.
+  - added option `DocumentReadOptions#allowDirtyRead` for `ArangoCollection#getDocument`
+  - added option `DocumentReadOptions#allowDirtyRead` for `ArangoCollection#getDocuments`
+  - added option `DocumentReadOptions#allowDirtyRead` for `ArangoVertexCollection#getVertex`
+  - added option `DocumentReadOptions#allowDirtyRead` for `ArangoEdgeCollection#getEdge`
+
+### Changed
+
+- changed the internal connection pool and host management. There now exists a connection pool for every configured host. This changes the behavior of `ArangoDB.Builder#maxConnections` which now allows to configure the maximal number of connection per host and not overall.
+- changed `IndexEntity#selectivityEstimate` from `Integer` to `Double`
+- upgraded dependency velocypack 1.4.1
+
+  - added support for generic types
+
+    Serialize the class name in a field \_class when necessary. Field name can be configured through VPack.Builder#typeKey(String)
+
+## [4.7.3] - 2018-09-03
+
+### Changed
+
+- made `AqlQueryOptions#Options` serializable
+
+## [4.7.2] - 2018-09-03
+
+### Changed
+
+- made `AqlQueryOptions` serializable
+
+## [4.7.1] - 2018-09-03
+
+### Fixed
+
 - applied arangosearch API changes for ArangoDB 3.4.0
+- fixed `ArangoCursor#close()`: check hasNext before close (issue #223)
 
 ## [4.7.0] - 2018-08-02
 
@@ -211,8 +283,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ### Fixed
 
-- fixed default Json parsing, include null values (Issue #163)
-- fixed Json parsing of negative long (Issue #151)
+- fixed default JSON parsing, include null values (Issue #163)
+- fixed JSON parsing of negative long (Issue #151)
 
 ## [4.3.0] - 2017-11-23
 
@@ -320,7 +392,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 - added `ArangoDBException#getException()`
 - added protocol switch (`ArangoDB.Builder#useProtocol(Protocol)`)
   - `Protocol#VST` = VeclocyStream (default)
-  - `Protocol#HTTP_JSON` = Json over HTTP
+  - `Protocol#HTTP_JSON` = JSON over HTTP
   - `Protocol#HTTP_VPACK` = VelocyPack over HTTP
 
 ## [4.1.12] - 2017-04-13
@@ -406,13 +478,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 ### Fixed
 
 - fixed URL encoding bug (#97)
-- fixed update/replaceDocumets with Json (#98)
+- fixed update/replaceDocumets with JSON (#98)
 
 ## [4.1.7] - 2017-01-26
 
 ### Fixed
 
-- fixed `importDocuments`, `insertDocuments` to work with raw Jsons (issue #91)
+- fixed `importDocuments`, `insertDocuments` to work with raw JSONs (issue #91)
 
 ## [4.1.6] - 2017-01-18
 
@@ -457,7 +529,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ### Added
 
-- added `VelocyPack` UTC_DATE parsing to Json String (ISO 8601)
+- added `VelocyPack` UTC_DATE parsing to JSON String (ISO 8601)
 - added configuration methods for `VPackParser` in `ArangoDB.Builder`
 - added `VPackJsonSerializer` for `VPackParser`
 
@@ -861,7 +933,15 @@ Added support for sparse indexes
 
 - Initial Release
 
-[unreleased]: https://github.com/arangodb/arangodb-java-driver/compare/4.7.0...HEAD
+[unreleased]: https://github.com/arangodb/arangodb-java-driver/compare/5.0.4...HEAD
+[5.0.4]: https://github.com/arangodb/arangodb-java-driver/compare/5.0.3...5.0.4
+[5.0.3]: https://github.com/arangodb/arangodb-java-driver/compare/5.0.2...5.0.3
+[5.0.2]: https://github.com/arangodb/arangodb-java-driver/compare/5.0.1...5.0.2
+[5.0.1]: https://github.com/arangodb/arangodb-java-driver/compare/5.0.0...5.0.1
+[5.0.0]: https://github.com/arangodb/arangodb-java-driver/compare/4.7.3...5.0.0
+[4.7.3]: https://github.com/arangodb/arangodb-java-driver/compare/4.7.2...4.7.3
+[4.7.2]: https://github.com/arangodb/arangodb-java-driver/compare/4.7.1...4.7.2
+[4.7.1]: https://github.com/arangodb/arangodb-java-driver/compare/4.7.0...4.7.1
 [4.7.0]: https://github.com/arangodb/arangodb-java-driver/compare/4.6.1...4.7.0
 [4.6.1]: https://github.com/arangodb/arangodb-java-driver/compare/4.6.0...4.6.1
 [4.6.0]: https://github.com/arangodb/arangodb-java-driver/compare/4.5.2...4.6.0

@@ -69,9 +69,7 @@ public class ArangoCollectionImpl extends InternalArangoCollection<ArangoDBImpl,
 
 	@Override
 	public <T> DocumentCreateEntity<T> insertDocument(final T value) throws ArangoDBException {
-		final DocumentCreateOptions options = new DocumentCreateOptions();
-		return executor.execute(insertDocumentRequest(value, options),
-			insertDocumentResponseDeserializer(value, options));
+		return insertDocument(value, new DocumentCreateOptions());
 	}
 
 	@Override
@@ -84,9 +82,7 @@ public class ArangoCollectionImpl extends InternalArangoCollection<ArangoDBImpl,
 	@Override
 	public <T> MultiDocumentEntity<DocumentCreateEntity<T>> insertDocuments(final Collection<T> values)
 			throws ArangoDBException {
-		final DocumentCreateOptions params = new DocumentCreateOptions();
-		return executor.execute(insertDocumentsRequest(values, params),
-			insertDocumentsResponseDeserializer(values, params));
+				return insertDocuments(values, new DocumentCreateOptions());
 	}
 
 	@Override
@@ -111,8 +107,7 @@ public class ArangoCollectionImpl extends InternalArangoCollection<ArangoDBImpl,
 
 	@Override
 	public DocumentImportEntity importDocuments(final String values) throws ArangoDBException {
-		return executor.execute(importDocumentsRequest(values, new DocumentImportOptions()),
-			DocumentImportEntity.class);
+		return importDocuments(values, new DocumentImportOptions());
 	}
 
 	@Override
@@ -148,15 +143,20 @@ public class ArangoCollectionImpl extends InternalArangoCollection<ArangoDBImpl,
 	@Override
 	public <T> MultiDocumentEntity<T> getDocuments(final Collection<String> keys, final Class<T> type)
 			throws ArangoDBException {
-		final DocumentReadOptions options = new DocumentReadOptions();
+		return getDocuments(keys, type, new DocumentReadOptions());
+	}
+
+	@Override
+	public <T> MultiDocumentEntity<T> getDocuments(
+		final Collection<String> keys,
+		final Class<T> type,
+		final DocumentReadOptions options) throws ArangoDBException {
 		return executor.execute(getDocumentsRequest(keys, options), getDocumentsResponseDeserializer(type, options));
 	}
 
 	@Override
 	public <T> DocumentUpdateEntity<T> replaceDocument(final String key, final T value) throws ArangoDBException {
-		final DocumentReplaceOptions options = new DocumentReplaceOptions();
-		return executor.execute(replaceDocumentRequest(key, value, options),
-			replaceDocumentResponseDeserializer(value, options));
+		return replaceDocument(key, value, new DocumentReplaceOptions());
 	}
 
 	@Override
@@ -171,9 +171,7 @@ public class ArangoCollectionImpl extends InternalArangoCollection<ArangoDBImpl,
 	@Override
 	public <T> MultiDocumentEntity<DocumentUpdateEntity<T>> replaceDocuments(final Collection<T> values)
 			throws ArangoDBException {
-		final DocumentReplaceOptions params = new DocumentReplaceOptions();
-		return executor.execute(replaceDocumentsRequest(values, params),
-			replaceDocumentsResponseDeserializer(values, params));
+		return replaceDocuments(values, new DocumentReplaceOptions());
 	}
 
 	@Override
@@ -187,9 +185,7 @@ public class ArangoCollectionImpl extends InternalArangoCollection<ArangoDBImpl,
 
 	@Override
 	public <T> DocumentUpdateEntity<T> updateDocument(final String key, final T value) throws ArangoDBException {
-		final DocumentUpdateOptions options = new DocumentUpdateOptions();
-		return executor.execute(updateDocumentRequest(key, value, options),
-			updateDocumentResponseDeserializer(value, options));
+		return updateDocument(key, value, new DocumentUpdateOptions());
 	}
 
 	@Override
@@ -204,9 +200,7 @@ public class ArangoCollectionImpl extends InternalArangoCollection<ArangoDBImpl,
 	@Override
 	public <T> MultiDocumentEntity<DocumentUpdateEntity<T>> updateDocuments(final Collection<T> values)
 			throws ArangoDBException {
-		final DocumentUpdateOptions params = new DocumentUpdateOptions();
-		return executor.execute(updateDocumentsRequest(values, params),
-			updateDocumentsResponseDeserializer(values, params));
+				return updateDocuments(values, new DocumentUpdateOptions());
 	}
 
 	@Override

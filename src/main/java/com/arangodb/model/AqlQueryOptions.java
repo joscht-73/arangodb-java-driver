@@ -20,9 +20,13 @@
 
 package com.arangodb.model;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 
 import com.arangodb.velocypack.VPackSlice;
+import com.arangodb.velocypack.annotations.Expose;
 
 /**
  * @author Mark Vollmary
@@ -30,7 +34,9 @@ import com.arangodb.velocypack.VPackSlice;
  * @see <a href="https://docs.arangodb.com/current/HTTP/AqlQueryCursor/AccessingCursors.html#create-cursor">API
  *      Documentation</a>
  */
-public class AqlQueryOptions {
+public class AqlQueryOptions implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	private Boolean count;
 	private Integer ttl;
@@ -40,6 +46,8 @@ public class AqlQueryOptions {
 	private VPackSlice bindVars;
 	private String query;
 	private Options options;
+	@Expose(serialize = false)
+	private Boolean allowDirtyRead;
 
 	public AqlQueryOptions() {
 		super();
@@ -370,6 +378,21 @@ public class AqlQueryOptions {
 		return this;
 	}
 
+	public Collection<String> getShardIds() {
+		return options != null ? options.shardIds : null;
+	}
+
+	/**
+	 * Restrict query to shards by given ids. This is an internal option. Use at your own risk.
+	 * 
+	 * @param shardIds
+	 * @return options
+	 */
+	public AqlQueryOptions shardIds(final String... shardIds) {
+		getOptions().getShardIds().addAll(Arrays.asList(shardIds));
+		return this;
+	}
+
 	private Options getOptions() {
 		if (options == null) {
 			options = new Options();
@@ -377,7 +400,10 @@ public class AqlQueryOptions {
 		return options;
 	}
 
-	private static class Options {
+	private static class Options implements Serializable {
+
+		private static final long serialVersionUID = 1L;
+
 		private Boolean failOnWarning;
 		private Boolean profile;
 		private Long maxTransactionSize;
@@ -390,6 +416,7 @@ public class AqlQueryOptions {
 		private Boolean fullCount;
 		private Integer maxPlans;
 		private Boolean stream;
+		private Collection<String> shardIds;
 
 		protected Optimizer getOptimizer() {
 			if (optimizer == null) {
@@ -398,10 +425,34 @@ public class AqlQueryOptions {
 			return optimizer;
 		}
 
+		protected Collection<String> getShardIds() {
+			if (shardIds == null) {
+				shardIds = new ArrayList<String>();
+			}
+			return shardIds;
+		}
+
 	}
 
 	private static class Optimizer {
 		private Collection<String> rules;
+	}
+
+	/**
+	 * @see <a href="https://docs.arangodb.com/current/Manual/Administration/ActiveFailover/#reading-from-follower">API
+	 *      Documentation</a>
+	 * @param allowDirtyRead
+	 *            Set to {@code true} allows reading from followers in an active-failover setup.
+	 * @since ArangoDB 3.4.0
+	 * @return options
+	 */
+	public AqlQueryOptions allowDirtyRead(final Boolean allowDirtyRead) {
+		this.allowDirtyRead = allowDirtyRead;
+		return this;
+	}
+
+	public Boolean getAllowDirtyRead() {
+		return allowDirtyRead;
 	}
 
 }

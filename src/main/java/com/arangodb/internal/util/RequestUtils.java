@@ -18,39 +18,37 @@
  * Copyright holder is ArangoDB GmbH, Cologne, Germany
  */
 
-package com.arangodb.internal.cursor;
+package com.arangodb.internal.util;
 
-import com.arangodb.ArangoIterator;
-import com.arangodb.Function;
+import com.arangodb.internal.net.AccessType;
+import com.arangodb.velocystream.Request;
 
 /**
  * @author Mark Vollmary
- * 
+ *
  */
-public class ArangoMappingIterator<R, T> implements ArangoIterator<T> {
+public final class RequestUtils {
 
-	private final ArangoIterator<R> iterator;
-	private final Function<? super R, ? extends T> mapper;
+	public static final String HEADER_ALLOW_DIRTY_READ = "X-Arango-Allow-Dirty-Read";
 
-	public ArangoMappingIterator(final ArangoIterator<R> iterator, final Function<? super R, ? extends T> mapper) {
+	private RequestUtils() {
 		super();
-		this.iterator = iterator;
-		this.mapper = mapper;
 	}
 
-	@Override
-	public boolean hasNext() {
-		return iterator.hasNext();
+	public static Request allowDirtyRead(final Request request) {
+		return request.putHeaderParam(HEADER_ALLOW_DIRTY_READ, "true");
 	}
 
-	@Override
-	public T next() {
-		return mapper.apply(iterator.next());
-	}
-
-	@Override
-	public void remove() {
-		throw new UnsupportedOperationException();
+	public static AccessType determineAccessType(final Request request) {
+		if (request.getHeaderParam().containsKey(HEADER_ALLOW_DIRTY_READ)) {
+			return AccessType.DIRTY_READ;
+		}
+		switch (request.getRequestType()) {
+		case GET:
+			return AccessType.READ;
+		default:
+			return AccessType.WRITE;
+		}
 	}
 
 }

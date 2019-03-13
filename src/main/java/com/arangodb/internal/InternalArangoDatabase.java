@@ -39,6 +39,7 @@ import com.arangodb.entity.ViewEntity;
 import com.arangodb.entity.ViewType;
 import com.arangodb.internal.ArangoExecutor.ResponseDeserializer;
 import com.arangodb.internal.util.ArangoSerializationFactory.Serializer;
+import com.arangodb.internal.util.RequestUtils;
 import com.arangodb.model.AqlFunctionCreateOptions;
 import com.arangodb.model.AqlFunctionDeleteOptions;
 import com.arangodb.model.AqlFunctionGetOptions;
@@ -192,17 +193,32 @@ public abstract class InternalArangoDatabase<A extends InternalArangoDB<E>, E ex
 		final String query,
 		final Map<String, Object> bindVars,
 		final AqlQueryOptions options) {
-		return request(name, RequestType.POST, PATH_API_CURSOR).setBody(util().serialize(
-			OptionsBuilder.build(options != null ? options : new AqlQueryOptions(), query, bindVars != null
+		final AqlQueryOptions opt = options != null ? options : new AqlQueryOptions();
+		final Request request = request(name, RequestType.POST, PATH_API_CURSOR).setBody(
+			util().serialize(OptionsBuilder.build(opt, query, bindVars != null
 					? util().serialize(bindVars, new ArangoSerializer.Options().serializeNullValues(true)) : null)));
+		if (opt.getAllowDirtyRead() == Boolean.TRUE) {
+			RequestUtils.allowDirtyRead(request);
+		}
+		return request;
 	}
 
-	protected Request queryNextRequest(final String id) {
-		return request(name, RequestType.PUT, PATH_API_CURSOR, id);
+	protected Request queryNextRequest(final String id, final AqlQueryOptions options) {
+		final Request request = request(name, RequestType.PUT, PATH_API_CURSOR, id);
+		final AqlQueryOptions opt = options != null ? options : new AqlQueryOptions();
+		if (opt.getAllowDirtyRead() == Boolean.TRUE) {
+			RequestUtils.allowDirtyRead(request);
+		}
+		return request;
 	}
 
-	protected Request queryCloseRequest(final String id) {
-		return request(name, RequestType.DELETE, PATH_API_CURSOR, id);
+	protected Request queryCloseRequest(final String id, final AqlQueryOptions options) {
+		final Request request = request(name, RequestType.DELETE, PATH_API_CURSOR, id);
+		final AqlQueryOptions opt = options != null ? options : new AqlQueryOptions();
+		if (opt.getAllowDirtyRead() == Boolean.TRUE) {
+			RequestUtils.allowDirtyRead(request);
+		}
+		return request;
 	}
 
 	protected Request explainQueryRequest(

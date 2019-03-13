@@ -73,6 +73,7 @@ import com.arangodb.model.DocumentImportOptions.OnDuplicate;
 import com.arangodb.model.DocumentReadOptions;
 import com.arangodb.model.DocumentReplaceOptions;
 import com.arangodb.model.DocumentUpdateOptions;
+import com.arangodb.velocypack.VPackSlice;
 
 /**
  * @author Mark Vollmary
@@ -179,7 +180,7 @@ public class ArangoCollectionTest extends BaseTest {
 
 	@Test
 	public void insertDocumentSilent() {
-		if (!requireVersion(3, 3)) {
+		if (arangoDB.getRole() != ServerRole.SINGLE) {
 			return;
 		}
 		final DocumentCreateEntity<BaseDocument> meta = db.collection(COLLECTION_NAME)
@@ -192,7 +193,7 @@ public class ArangoCollectionTest extends BaseTest {
 
 	@Test
 	public void insertDocumentSilentDontTouchInstance() {
-		if (!requireVersion(3, 3)) {
+		if (arangoDB.getRole() != ServerRole.SINGLE) {
 			return;
 		}
 		final BaseDocument doc = new BaseDocument();
@@ -203,6 +204,19 @@ public class ArangoCollectionTest extends BaseTest {
 		assertThat(meta, is(notNullValue()));
 		assertThat(meta.getKey(), is(nullValue()));
 		assertThat(doc.getKey(), is(key));
+	}
+
+	@Test
+	public void insertDocumentsSilent() {
+		if (arangoDB.getRole() != ServerRole.SINGLE) {
+			return;
+		}
+		final MultiDocumentEntity<DocumentCreateEntity<BaseDocument>> info = db.collection(COLLECTION_NAME).insertDocuments(
+				Arrays.asList(new BaseDocument(), new BaseDocument()), new DocumentCreateOptions().silent(true));
+		assertThat(info, is(notNullValue()));
+		assertThat(info.getDocuments().isEmpty(), is(true));
+		assertThat(info.getDocumentsAndErrors().isEmpty(), is(true));
+		assertThat(info.getErrors().isEmpty(), is(true));
 	}
 
 	@Test
@@ -300,6 +314,14 @@ public class ArangoCollectionTest extends BaseTest {
 		db.collection(COLLECTION_NAME).getDocument("no/no", BaseDocument.class);
 	}
 
+	public void getDocumentDirtyRead() {
+		final BaseDocument doc = new BaseDocument();
+		db.collection(COLLECTION_NAME).insertDocument(doc);
+		final VPackSlice document = db.collection(COLLECTION_NAME).getDocument(doc.getKey(), VPackSlice.class,
+			new DocumentReadOptions().allowDirtyRead(true));
+		assertThat(document, is(notNullValue()));
+	}
+
 	@Test
 	public void getDocuments() {
 		final Collection<BaseDocument> values = new ArrayList<BaseDocument>();
@@ -309,6 +331,23 @@ public class ArangoCollectionTest extends BaseTest {
 		db.collection(COLLECTION_NAME).insertDocuments(values);
 		final MultiDocumentEntity<BaseDocument> documents = db.collection(COLLECTION_NAME)
 				.getDocuments(Arrays.asList("1", "2", "3"), BaseDocument.class);
+		assertThat(documents, is(notNullValue()));
+		assertThat(documents.getDocuments().size(), is(3));
+		for (final BaseDocument document : documents.getDocuments()) {
+			assertThat(document.getId(),
+				isOneOf(COLLECTION_NAME + "/" + "1", COLLECTION_NAME + "/" + "2", COLLECTION_NAME + "/" + "3"));
+		}
+	}
+
+	@Test
+	public void getDocumentsDirtyRead() {
+		final Collection<BaseDocument> values = new ArrayList<BaseDocument>();
+		values.add(new BaseDocument("1"));
+		values.add(new BaseDocument("2"));
+		values.add(new BaseDocument("3"));
+		db.collection(COLLECTION_NAME).insertDocuments(values);
+		final MultiDocumentEntity<BaseDocument> documents = db.collection(COLLECTION_NAME).getDocuments(
+			Arrays.asList("1", "2", "3"), BaseDocument.class, new DocumentReadOptions().allowDirtyRead(true));
 		assertThat(documents, is(notNullValue()));
 		assertThat(documents.getDocuments().size(), is(3));
 		for (final BaseDocument document : documents.getDocuments()) {
@@ -636,7 +675,7 @@ public class ArangoCollectionTest extends BaseTest {
 
 	@Test
 	public void updateDocumentSilent() {
-		if (!requireVersion(3, 3)) {
+		if (arangoDB.getRole() != ServerRole.SINGLE) {
 			return;
 		}
 		final DocumentCreateEntity<BaseDocument> createResult = db.collection(COLLECTION_NAME)
@@ -647,6 +686,21 @@ public class ArangoCollectionTest extends BaseTest {
 		assertThat(meta.getId(), is(nullValue()));
 		assertThat(meta.getKey(), is(nullValue()));
 		assertThat(meta.getRev(), is(nullValue()));
+	}
+
+	@Test
+	public void updateDocumentsSilent() {
+		if (arangoDB.getRole() != ServerRole.SINGLE) {
+			return;
+		}
+		final DocumentCreateEntity<BaseDocument> createResult = db.collection(COLLECTION_NAME)
+				.insertDocument(new BaseDocument());
+		final MultiDocumentEntity<DocumentUpdateEntity<BaseDocument>> info = db.collection(COLLECTION_NAME).updateDocuments(
+				Arrays.asList(new BaseDocument(createResult.getKey())), new DocumentUpdateOptions().silent(true));
+		assertThat(info, is(notNullValue()));
+		assertThat(info.getDocuments().isEmpty(), is(true));
+		assertThat(info.getDocumentsAndErrors().isEmpty(), is(true));
+		assertThat(info.getErrors().isEmpty(), is(true));
 	}
 
 	@Test
@@ -790,7 +844,7 @@ public class ArangoCollectionTest extends BaseTest {
 
 	@Test
 	public void replaceDocumentSilent() {
-		if (!requireVersion(3, 3)) {
+		if (arangoDB.getRole() != ServerRole.SINGLE) {
 			return;
 		}
 		final DocumentCreateEntity<BaseDocument> createResult = db.collection(COLLECTION_NAME)
@@ -805,7 +859,7 @@ public class ArangoCollectionTest extends BaseTest {
 
 	@Test
 	public void replaceDocumentSilentDontTouchInstance() {
-		if (!requireVersion(3, 3)) {
+		if (arangoDB.getRole() != ServerRole.SINGLE) {
 			return;
 		}
 		final BaseDocument doc = new BaseDocument();
@@ -816,6 +870,22 @@ public class ArangoCollectionTest extends BaseTest {
 				.replaceDocument(createResult.getKey(), doc, new DocumentReplaceOptions().silent(true));
 		assertThat(meta.getRev(), is(nullValue()));
 		assertThat(doc.getRevision(), is(revision));
+	}
+
+	@Test
+	public void replaceDocumentsSilent() {
+		if (arangoDB.getRole() != ServerRole.SINGLE) {
+			return;
+		}
+		final DocumentCreateEntity<BaseDocument> createResult = db.collection(COLLECTION_NAME)
+				.insertDocument(new BaseDocument());
+		final MultiDocumentEntity<DocumentUpdateEntity<BaseDocument>> info = db.collection(COLLECTION_NAME)
+				.replaceDocuments(Arrays.asList(new BaseDocument(createResult.getKey())),
+						new DocumentReplaceOptions().silent(true));
+		assertThat(info, is(notNullValue()));
+		assertThat(info.getDocuments().isEmpty(), is(true));
+		assertThat(info.getDocumentsAndErrors().isEmpty(), is(true));
+		assertThat(info.getErrors().isEmpty(), is(true));
 	}
 
 	@Test
@@ -871,7 +941,7 @@ public class ArangoCollectionTest extends BaseTest {
 
 	@Test
 	public void deleteDocumentSilent() {
-		if (!requireVersion(3, 3)) {
+		if (arangoDB.getRole() != ServerRole.SINGLE) {
 			return;
 		}
 		final DocumentCreateEntity<BaseDocument> createResult = db.collection(COLLECTION_NAME)
@@ -882,6 +952,21 @@ public class ArangoCollectionTest extends BaseTest {
 		assertThat(meta.getId(), is(nullValue()));
 		assertThat(meta.getKey(), is(nullValue()));
 		assertThat(meta.getRev(), is(nullValue()));
+	}
+
+	@Test
+	public void deleteDocumentsSilent() {
+		if (arangoDB.getRole() != ServerRole.SINGLE) {
+			return;
+		}
+		final DocumentCreateEntity<BaseDocument> createResult = db.collection(COLLECTION_NAME)
+				.insertDocument(new BaseDocument());
+		final MultiDocumentEntity<DocumentDeleteEntity<BaseDocument>> info = db.collection(COLLECTION_NAME).deleteDocuments(
+				Arrays.asList(createResult.getKey()), BaseDocument.class, new DocumentDeleteOptions().silent(true));
+		assertThat(info, is(notNullValue()));
+		assertThat(info.getDocuments().isEmpty(), is(true));
+		assertThat(info.getDocumentsAndErrors().isEmpty(), is(true));
+		assertThat(info.getErrors().isEmpty(), is(true));
 	}
 
 	@Test
@@ -946,7 +1031,7 @@ public class ArangoCollectionTest extends BaseTest {
 		assertThat(indexResult.getIsNewlyCreated(), is(true));
 		assertThat(indexResult.getMinLength(), is(nullValue()));
 		if (arangoDB.getRole() == ServerRole.SINGLE) {
-			assertThat(indexResult.getSelectivityEstimate(), is(1));
+			assertThat(indexResult.getSelectivityEstimate(), is(1.));
 		}
 		assertThat(indexResult.getSparse(), is(false));
 		assertThat(indexResult.getType(), is(IndexType.hash));
@@ -1192,6 +1277,8 @@ public class ArangoCollectionTest extends BaseTest {
 				.insertDocuments(Arrays.asList(doc1, doc2),
 					new DocumentCreateOptions().overwrite(true).returnOld(true).returnNew(true));
 		assertThat(repsert, is(notNullValue()));
+		assertThat(repsert.getDocuments().size(), is(2));
+		assertThat(repsert.getErrors().size(), is(0));
 		for (final DocumentCreateEntity<BaseDocument> documentCreateEntity : repsert.getDocuments()) {
 			assertThat(documentCreateEntity.getRev(), is(not(meta1.getRev())));
 			assertThat(documentCreateEntity.getRev(), is(not(meta2.getRev())));

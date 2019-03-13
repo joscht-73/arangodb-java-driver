@@ -20,76 +20,16 @@
 
 package com.arangodb.internal.net;
 
-import java.io.IOException;
-import java.util.LinkedList;
-
-import com.arangodb.ArangoDBException;
+import java.io.Closeable;
 
 /**
  * @author Mark Vollmary
  *
  */
-public abstract class ConnectionPool<C extends Connection> {
+public interface ConnectionPool extends Closeable {
 
-	private final LinkedList<C> connections;
-	private final int maxConnections;
+	Connection createConnection(final HostDescription host);
 
-	public ConnectionPool(final Integer maxConnections) {
-		super();
-		this.maxConnections = maxConnections;
-		connections = new LinkedList<C>();
-	}
+	Connection connection();
 
-	public abstract C createConnection(final Host host);
-
-	public synchronized C connection(final HostHandle hostHandle) {
-		final C c;
-		if (hostHandle == null || hostHandle.getHost() == null) {
-			if (connections.size() < maxConnections) {
-				c = createConnection(null);
-			} else {
-				c = connections.removeFirst();
-			}
-			if (hostHandle != null) {
-				hostHandle.setHost(c.getHost());
-			}
-		} else {
-			final Host host = hostHandle.getHost();
-			C tmp = null;
-			for (final C connection : connections) {
-				if (connection.getHost().equals(host)) {
-					tmp = connection;
-					connections.remove(tmp);
-					break;
-				}
-			}
-			c = tmp != null ? tmp : createConnection(host);
-		}
-		connections.add(c);
-		return c;
-	}
-
-	public void disconnect() throws IOException {
-		while (!connections.isEmpty()) {
-			connections.removeLast().close();
-		}
-	}
-
-	public void closeConnection(final C connection) {
-		try {
-			connection.close();
-			connections.remove(connection);
-		} catch (final IOException e) {
-			throw new ArangoDBException(e);
-		}
-	}
-
-	public void closeConnectionOnError(final C connection) {
-		try {
-			connection.closeOnError();
-			connections.remove(connection);
-		} catch (final IOException e) {
-			throw new ArangoDBException(e);
-		}
-	}
 }
