@@ -27,26 +27,25 @@ import java.lang.annotation.Target;
 
 /**
  * @author Mark Vollmary
- *
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.FIELD })
+@Target({ElementType.FIELD})
 public @interface DocumentField {
 
-	public static enum Type {
-		ID("_id"), KEY("_key"), REV("_rev"), FROM("_from"), TO("_to");
+    enum Type {
+        ID("_id"), KEY("_key"), REV("_rev"), FROM("_from"), TO("_to");
 
-		private final String serializeName;
+        private final String serializeName;
 
-		private Type(final String serializeName) {
-			this.serializeName = serializeName;
-		}
+        Type(final String serializeName) {
+            this.serializeName = serializeName;
+        }
 
-		public String getSerializeName() {
-			return serializeName;
-		}
-	}
+        public String getSerializeName() {
+            return serializeName;
+        }
+    }
 
-	Type value();
+    Type value();
 
 }

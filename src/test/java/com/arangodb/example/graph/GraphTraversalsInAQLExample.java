@@ -20,24 +20,22 @@
 
 package com.arangodb.example.graph;
 
-import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import com.arangodb.ArangoCursor;
+import com.arangodb.ArangoDBException;
+import org.junit.Test;
 
 import java.util.Collection;
 
-import org.junit.Test;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.is;
 
-import com.arangodb.ArangoCursor;
-import com.arangodb.ArangoDBException;
 
 /**
  * Graph traversals in AQL
- * 
- * @see <a href="https://docs.arangodb.com/current/AQL/Graphs/Traversals.html">Graph traversals in AQL</a>
- * 
- * @author a-brandt
  *
+ * @author a-brandt
+ * @see <a href="https://www.arangodb.com/docs/stable/aql/graphs-traversals.html">Graph traversals in AQL</a>
  */
 public class GraphTraversalsInAQLExample extends BaseGraphTest {
 

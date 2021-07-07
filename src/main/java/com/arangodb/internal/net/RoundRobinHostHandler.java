@@ -20,83 +20,83 @@
 
 package com.arangodb.internal.net;
 
-import java.io.IOException;
-import java.util.List;
+import com.arangodb.ArangoDBException;
 
 /**
  * @author Mark Vollmary
- *
  */
 public class RoundRobinHostHandler implements HostHandler {
 
-	private final HostResolver resolver;
-	private int current;
-	private int fails;
+    private final HostResolver resolver;
+    private int current;
+    private int fails;
+    private Host currentHost;
+    private HostSet hosts;
 
-	public RoundRobinHostHandler(final HostResolver resolver) {
-		super();
-		this.resolver = resolver;
-		resolver.resolve(true, false);
-		current = 0;
-		fails = 0;
-	}
+    public RoundRobinHostHandler(final HostResolver resolver) {
+        super();
+        this.resolver = resolver;
+        hosts = resolver.resolve(true, false);
+        current = 0;
+        fails = 0;
+    }
 
-	@Override
-	public Host get(final HostHandle hostHandle, AccessType accessType) {
-		final List<Host> hosts = resolver.resolve(false, false);
-		final int size = hosts.size();
-		if (fails > size) {
-			return null;
-		}
-		final int index = (current++) % size;
-		Host host = hosts.get(index);
-		if (hostHandle != null) {
-			final HostDescription hostDescription = hostHandle.getHost();
-			if (hostDescription != null) {
-				for (int i = index; i < index + size; i++) {
-					host = hosts.get(i % size);
-					if (hostDescription.equals(host.getDescription())) {
-						break;
-					}
-				}
-			} else {
-				hostHandle.setHost(host.getDescription());
-			}
-		}
-		return host;
-	}
+    @Override
+    public Host get(final HostHandle hostHandle, AccessType accessType) {
+        hosts = resolver.resolve(false, false);
+        final int size = hosts.getHostsList().size();
 
-	@Override
-	public void success() {
-		fails = 0;
-	}
+        if (fails > size) {
+            reset();
+            throw new ArangoDBException("Cannot contact any host!");
+        }
 
-	@Override
-	public void fail() {
-		fails++;
-	}
+        final int index = (current++) % size;
+        Host host = hosts.getHostsList().get(index);
+        if (hostHandle != null) {
+            final HostDescription hostDescription = hostHandle.getHost();
+            if (hostDescription != null) {
+                for (int i = index; i < index + size; i++) {
+                    host = hosts.getHostsList().get(i % size);
+                    if (hostDescription.equals(host.getDescription())) {
+                        break;
+                    }
+                }
+            } else {
+                hostHandle.setHost(host.getDescription());
+            }
+        }
+        currentHost = host;
+        return host;
+    }
 
-	@Override
-	public void reset() {
-		fails = 0;
-	}
+    @Override
+    public void success() {
+        fails = 0;
+    }
 
-	@Override
-	public void confirm() {
-	}
+    @Override
+    public void fail() {
+        fails++;
+    }
 
-	@Override
-	public void close() throws IOException {
-		final List<Host> hosts = resolver.resolve(false, false);
-		for (final Host host : hosts) {
-			host.close();
-		}
-	}
+    @Override
+    public void reset() {
+        fails = 0;
+    }
 
-	@Override
-	public void closeCurrentOnError() {
-		final List<Host> hosts = resolver.resolve(false, false);
-		hosts.get(current).closeOnError();
-	}
+    @Override
+    public void confirm() {
+    }
+
+    @Override
+    public void close() {
+        hosts.close();
+    }
+
+    @Override
+    public void closeCurrentOnError() {
+        currentHost.closeOnError();
+    }
 
 }

@@ -20,135 +20,158 @@
 
 package com.arangodb.entity;
 
-import java.util.Collection;
-
 import com.arangodb.velocypack.VPackSlice;
+
+import java.util.Collection;
+import java.util.Map;
 
 /**
  * @author Mark Vollmary
- * 
- * @see <a href="https://docs.arangodb.com/current/HTTP/AqlQueryCursor/AccessingCursors.html#create-cursor">API
- *      Documentation</a>
+ * @see <a href="https://www.arangodb.com/docs/stable/http/aql-query-cursor-accessing-cursors.html#create-cursor">API
+ * Documentation</a>
  */
-public class CursorEntity implements Entity {
+public class CursorEntity implements Entity, MetaAware {
 
-	private String id;
-	private Integer count;
-	private Extras extra;
-	private Boolean cached;
-	private Boolean hasMore;
-	private VPackSlice result;
+    private String id;
+    private Integer count;
+    private Extras extra;
+    private Boolean cached;
+    private Boolean hasMore;
+    private VPackSlice result;
 
-	public String getId() {
-		return id;
-	}
+    private Map<String, String> meta;
 
-	/**
-	 * @return the total number of result documents available (only available if the query was executed with the count
-	 *         attribute set)
-	 */
-	public Integer getCount() {
-		return count;
-	}
+    public String getId() {
+        return id;
+    }
 
-	/**
-	 * @return an optional object with extra information about the query result contained in its stats sub-attribute.
-	 *         For data-modification queries, the extra.stats sub-attribute will contain the number of modified
-	 *         documents and the number of documents that could not be modified due to an error (if ignoreErrors query
-	 *         option is specified)
-	 */
-	public Extras getExtra() {
-		return extra;
-	}
+    /**
+     * @return the total number of result documents available (only available if the query was executed with the count
+     * attribute set)
+     */
+    public Integer getCount() {
+        return count;
+    }
 
-	/**
-	 * @return a boolean flag indicating whether the query result was served from the query cache or not. If the query
-	 *         result is served from the query cache, the extra return attribute will not contain any stats
-	 *         sub-attribute and no profile sub-attribute.
-	 */
-	public Boolean getCached() {
-		return cached;
-	}
+    /**
+     * @return an optional object with extra information about the query result contained in its stats sub-attribute.
+     * For data-modification queries, the extra.stats sub-attribute will contain the number of modified
+     * documents and the number of documents that could not be modified due to an error (if ignoreErrors query
+     * option is specified)
+     */
+    public Extras getExtra() {
+        return extra;
+    }
 
-	/**
-	 * @return A boolean indicator whether there are more results available for the cursor on the server
-	 */
-	public Boolean getHasMore() {
-		return hasMore;
-	}
+    /**
+     * @return a boolean flag indicating whether the query result was served from the query cache or not. If the query
+     * result is served from the query cache, the extra return attribute will not contain any stats
+     * sub-attribute and no profile sub-attribute.
+     */
+    public Boolean getCached() {
+        return cached;
+    }
 
-	/**
-	 * @return an vpack-array of result documents (might be empty if query has no results)
-	 */
-	public VPackSlice getResult() {
-		return result;
-	}
+    /**
+     * @return A boolean indicator whether there are more results available for the cursor on the server
+     */
+    public Boolean getHasMore() {
+        return hasMore;
+    }
 
-	public static class Warning {
+    /**
+     * @return an vpack-array of result documents (might be empty if query has no results)
+     */
+    public VPackSlice getResult() {
+        return result;
+    }
 
-		private Integer code;
-		private String message;
+    public Map<String, String> getMeta() {
+        return meta;
+    }
 
-		public Integer getCode() {
-			return code;
-		}
+    /**
+     * @return remove not allowed (valid storable) meta information
+     */
+    public Map<String, String> cleanupMeta(Map<String, String> meta) {
+        meta.remove("Content-Length");
+        meta.remove("Transfer-Encoding");
+        return meta;
+    }
 
-		public String getMessage() {
-			return message;
-		}
+    public void setMeta(Map<String, String> meta) {
+        this.meta = cleanupMeta(meta);
+    }
 
-	}
+    public static class Warning {
 
-	public static class Extras {
-		private Stats stats;
-		private Collection<Warning> warnings;
+        private Integer code;
+        private String message;
 
-		public Stats getStats() {
-			return stats;
-		}
+        public Integer getCode() {
+            return code;
+        }
 
-		public Collection<Warning> getWarnings() {
-			return warnings;
-		}
+        public String getMessage() {
+            return message;
+        }
 
-	}
+    }
 
-	public static class Stats {
-		private Long writesExecuted;
-		private Long writesIgnored;
-		private Long scannedFull;
-		private Long scannedIndex;
-		private Long filtered;
-		private Long fullCount;
-		private Double executionTime;
+    public static class Extras {
+        private Stats stats;
+        private Collection<Warning> warnings;
 
-		public Long getWritesExecuted() {
-			return writesExecuted;
-		}
+        public Stats getStats() {
+            return stats;
+        }
 
-		public Long getWritesIgnored() {
-			return writesIgnored;
-		}
+        public Collection<Warning> getWarnings() {
+            return warnings;
+        }
 
-		public Long getScannedFull() {
-			return scannedFull;
-		}
+    }
 
-		public Long getScannedIndex() {
-			return scannedIndex;
-		}
+    public static class Stats {
+        private Long writesExecuted;
+        private Long writesIgnored;
+        private Long scannedFull;
+        private Long scannedIndex;
+        private Long filtered;
+        private Long fullCount;
+        private Double executionTime;
+        private Long peakMemoryUsage;
 
-		public Long getFiltered() {
-			return filtered;
-		}
+        public Long getWritesExecuted() {
+            return writesExecuted;
+        }
 
-		public Long getFullCount() {
-			return fullCount;
-		}
+        public Long getWritesIgnored() {
+            return writesIgnored;
+        }
 
-		public Double getExecutionTime() {
-			return executionTime;
-		}
+        public Long getScannedFull() {
+            return scannedFull;
+        }
 
-	}
+        public Long getScannedIndex() {
+            return scannedIndex;
+        }
+
+        public Long getFiltered() {
+            return filtered;
+        }
+
+        public Long getFullCount() {
+            return fullCount;
+        }
+
+        public Double getExecutionTime() {
+            return executionTime;
+        }
+
+        public Long getPeakMemoryUsage() {
+            return peakMemoryUsage;
+        }
+    }
 }

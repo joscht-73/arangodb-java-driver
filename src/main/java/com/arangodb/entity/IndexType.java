@@ -22,8 +22,8 @@ package com.arangodb.entity;
 
 /**
  * @author Mark Vollmary
- *
+ * @author Heiko Kernbach
  */
 public enum IndexType {
-	primary, hash, skiplist, persistent, geo, geo1, geo2, fulltext, edge
+    primary, hash, skiplist, persistent, geo, geo1, geo2, fulltext, edge, ttl
 }

@@ -20,57 +20,57 @@
 
 package com.arangodb.internal.util;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.*;
 
 /**
  * @author Mark Vollmary
- *
  */
 public final class IOUtils {
 
-	private IOUtils() {
-	}
+    private static final Logger LOGGER = LoggerFactory.getLogger(IOUtils.class);
 
-	public static String toString(final InputStream input) throws IOException {
-		return toString(input, "utf-8");
-	}
+    private IOUtils() {
+    }
 
-	public static String toString(final InputStream input, final String encode) throws IOException {
-		try {
-			final StringBuilder buffer = new StringBuilder(8012);
-			final InputStreamReader in = new InputStreamReader(new BufferedInputStream(input), encode);
-			final char[] cbuf = new char[8012];
-			int len;
-			while ((len = in.read(cbuf)) != -1) {
-				buffer.append(cbuf, 0, len);
-			}
-			return buffer.toString();
-		} catch (final UnsupportedEncodingException e) {
-			throw new RuntimeException(e);
-		} finally {
-			if (input != null) {
-				try {
-					input.close();
-				} catch (final IOException e) {
-					// TODO
-				}
-			}
-		}
-	}
+    public static String toString(final InputStream input) throws IOException {
+        return toString(input, "utf-8");
+    }
 
-	public static byte[] toByteArray(final InputStream input) throws IOException {
-		final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-		int nRead;
-		final byte[] data = new byte[8012];
-		while ((nRead = input.read(data, 0, data.length)) != -1) {
-			buffer.write(data, 0, nRead);
-		}
-		buffer.flush();
-		return buffer.toByteArray();
-	}
+    public static String toString(final InputStream input, final String encode) throws IOException {
+        try {
+            final StringBuilder buffer = new StringBuilder(8012);
+            final InputStreamReader in = new InputStreamReader(new BufferedInputStream(input), encode);
+            final char[] cbuf = new char[8012];
+            int len;
+            while ((len = in.read(cbuf)) != -1) {
+                buffer.append(cbuf, 0, len);
+            }
+            return buffer.toString();
+        } catch (final UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        } finally {
+            if (input != null) {
+                try {
+                    input.close();
+                } catch (final IOException e) {
+                    // TODO
+                }
+            }
+        }
+    }
+
+    public static byte[] toByteArray(final InputStream input) throws IOException {
+        final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        int nRead;
+        final byte[] data = new byte[8012];
+        while ((nRead = input.read(data, 0, data.length)) != -1) {
+            buffer.write(data, 0, nRead);
+        }
+        buffer.flush();
+        return buffer.toByteArray();
+    }
+
 }

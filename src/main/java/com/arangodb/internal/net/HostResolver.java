@@ -20,23 +20,16 @@
 
 package com.arangodb.internal.net;
 
-import java.util.Collection;
-import java.util.List;
-
-import com.arangodb.ArangoDBException;
+import com.arangodb.internal.ArangoExecutorSync;
+import com.arangodb.util.ArangoSerialization;
 
 /**
  * @author Mark Vollmary
- *
  */
 public interface HostResolver {
 
-	public interface EndpointResolver {
-		Collection<String> resolve(boolean closeConnections) throws ArangoDBException;
-	}
+    void init(ArangoExecutorSync executorSync, ArangoSerialization arangoSerialization);
 
-	void init(final EndpointResolver resolver);
-
-	List<Host> resolve(boolean initial, boolean closeConnections);
+    HostSet resolve(boolean initial, boolean closeConnections);
 
 }

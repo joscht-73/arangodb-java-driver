@@ -6,6 +6,229 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ## [Unreleased]
 
+## [6.12.3] - 2021-06-24
+
+- fixed host handler failures count (#DEVSUP-805, #398)
+
+## [6.12.2] - 2021-06-17
+
+- added missing enum value `QueryExecutionState.KILLED` (#391)
+- fixed `acquireHostList` to loadBalancer or hostname alias (#385)
+
+**WARNING**: The implementation of Stopwords analyzer is not final in ArangoDB 3.8.0, so using it might result in unpredictable behavior.
+This will be fixed in ArangoDB 3.8.1 and will have a different API.
+Any usage of the current Java driver API related to it is therefore discouraged.
+
+## [6.12.1] - 2021-04-28
+
+- fixed request timeout in async driver (#ES-837)
+
+## [6.12.0] - 2021-04-28
+
+- added support for modifying collection schema
+
+## [6.11.1] - 2021-04-23
+
+- velocypack v2.5.3
+
+## [6.11.0] - 2021-04-21
+
+- added support for getting db log entries via `GET /_admin/log/entries` (ArangoDB v3.8)
+- added support for index estimates (ArangoDB v3.8)
+- added support for ArangoSearch `AQL`, `Pipeline`, `Stopwords`, `GeoJSON`, `GeoPoint` analyzers (ArangoDB v3.8)
+- fixed active failover behavior for the asynchronous driver (#381)
+- deprecated `ArangoIterable` methods in favour of Java 8 Stream equivalents (#382)
+
+## [6.10.0] - 2021-03-27
+
+- closing VST connection after 3 consecutive keepAlive failures (#ES-837)
+
+## [6.9.1] - 2021-03-23
+
+- fixed `acquireHostList` in asynchronous driver (#377)
+- fixed exception swallowing in `ArangoDatabaseAsync#exists`
+- fixed performance issue when consuming big AQL cursor batches in stream mode (arangodb/arangodb#13476) 
+
+## [6.9.0] - 2021-02-04
+
+- added `com.arangodb.mapping.ArangoJack` to replace `com.arangodb.jackson.dataformat.velocypack.VelocyJack` (from 
+  `com.arangodb:jackson-dataformat-velocypack`)
+
+- fixed removing removed coordinators from the hostlist (#347)
+
+## [6.8.2] - 2021-01-25
+
+- fixed closing connection on failed authentication (#ES-772)
+
+## [6.8.1] - 2020-12-22
+
+- fixed ignoring internal endpoints in acquireHostList (#DEVSUP-673)
+
+## [6.8.0] - 2020-12-10
+
+- added configurable VST keep-alive
+
+## [6.7.5] - 2020-09-22
+
+- allow customizing httpRequestRetryHandler
+
+## [6.7.4] - 2020-09-03
+
+- fixed path escaping in `ArangoDatabase.route()`
+- added ssl hostname verifier to ArangoDB builder
+
+## [6.7.3] - 2020-08-14
+
+- added `users` field to `DBCreateOptions`
+- velocypack v2.4.1
+
+## [6.7.2] - 2020-07-29
+
+- velocypack v2.4.0
+
+## [6.7.1] - 2020-07-07
+
+- fixed VST communication adding `accept` and `content-type` headers to every message
+- fixed missing classes in GraalVM native image reflection configuration
+
+## [6.7.0] - 2020-07-01
+
+- added support of schema validation (ArangoDB v3.7)
+- added support of `overwriteMode` on document creation, to allow `insert-ignore`, `insert-replace` and `insert-update` (ArangoDB v3.7)
+- added support of `mergeObjects` for insert document with `overwriteMode: update` (ArangoDB v3.7)
+- added support of `storedValues` in `ArangoSearchProperties` (ArangoDB v3.7)
+- added support of `primarySortCompression` in `ArangoSearchProperties` (ArangoDB v3.7)
+- added support of `DisjointSmartGraphs` and `SatelliteGraphs` (ArangoDB v3.7)
+- added support of `SatelliteGraphs` support (ArangoDB v3.7)
+- allow specifying return type on document update
+- added `peakMemoryUsage` to aql statistics
+
+## [6.7.0_PREVIEW_3.7.1-alpha.1] - 2020-05-22
+
+- added support of `DisjointSmartGraphs` and `SatelliteGraphs` (ArangoDB v3.7)
+- added support of `storedValues` in `ArangoSearchProperties` (ArangoDB v3.7)
+- added support of `primarySortCompression` in `ArangoSearchProperties` (ArangoDB v3.7)
+- added support of `overwriteMode` on document creation, to allow `insert-ignore`, `insert-replace` and `insert-update` (ArangoDB v3.7)
+- added support of `mergeObjects` for insert document with `overwriteMode: update` (ArangoDB v3.7)
+- velocypack v2.3.1
+
+## [6.6.3] - 2020-05-06
+
+- velocypack v2.3.1
+
+## [6.6.2] - 2020-04-07
+
+- bugfix VelocyJack deserialization
+- bugfix `allowImplicit` parameter in stream transactions
+
+## [6.7.0_PREVIEW_3.7.0-alpha.2_0] - 2020-03-24
+
+- added `overwriteMode` parameter to support insert-update (ArangoDB v3.7)
+- satellite graphs support (ArangoDB v3.7)
+- schema validation (ArangoDB v3.7)
+- added `peakMemoryUsage` to aql statistics
+
+## [6.6.1] - 2020-03-18
+
+- GraalVM Native Image support
+- fixed acquire host list (ArangoDB v3.7)
+
+## [6.6.0] - 2020-02-03
+
+- typed ArangoSearch analyzers
+- updated dependecies
+- bugfix asynchronous shutdown
+
+## [6.5.0] - 2019-12-23
+
+- createDatabase with options (replicationFactor, minReplicationFactor, sharding) (ArangoDB v3.6)
+- extended DatabaseEntity with replicationFactor, minReplicationFactor, sharding (ArangoDB v3.6)
+- timeout option for AQL queries (ArangoDB v3.6)
+- enhancedNgramAnalyzer and enhancedTextAnalyzer (ArangoDB v3.6)
+- velocypack v2.1.0
+
+## [6.4.1] - 2019-10-23
+
+- jackson v2.9.10
+
+## [6.4.0] - 2019-10-09
+
+### Added
+
+- Stream Transactions support for graph APIs
+
+### Fixed
+
+- `catchExceptions` option in async `getEdge` and `getVertex`
+
+## [6.3.0] - 2019-09-16
+
+### Added
+
+- support for keyType uuid & padded
+
+### Fixed
+
+- bugfix AqlExecutionExplainEntity indexes
+- bugfix reconnection after more than 3 failures
+
+## [6.2.0] - 2019-09-05
+
+- merged async driver
+- bugfix method chaining in IndexOptions
+
+## [6.1.0] - 2019-08-29
+
+### Added
+
+- updated maven dependencies
+
+### Fixed
+
+- custom serde not always used
+- `documentExists()` and `getDocument` behaviour on non existing `transactionId`
+
+## [6.0.0] - 2019-08-20
+
+### Added
+
+- split `GraphDocumentReadOptions` from `DocumentReadOptions` (breaking change)
+- added `ArangoCollection#getResponsibleShard(Object)`
+- added support for Analyzers
+- added support for Stream Transactions
+- added support for named indices
+- added support for TTL indices
+- added minReplicationAttribute for collections and graphs
+
+## [5.0.7] - 2019-07-19
+
+### Fixed
+
+- properly all load all configuration defaults
+
+### Added
+
+- added acquireHostListInterval configuration parameter
+
+## [5.0.6] - 2019-05-24
+
+### Added
+
+- requests are now storing header information
+- faster test code execution
+
+## [5.0.5] - 2019-05-24
+
+### Fixed
+
+- host handling (issue #241)
+- logging extended hostresolver
+
+### Added
+
+- add arangodb.httpCookieSpec
+- added smartJoinAttribute and shardingStrategy collection attributes
+
 ## [5.0.4] - 2019-18-01
 
 ### Fixed
@@ -45,7 +268,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ### Added
 
-- added dirty read support ([reading from followers](https://docs.arangodb.com/current/Manual/Administration/ActiveFailover/#reading-from-follower))
+- added dirty read support ([reading from followers](https://www.arangodb.com/docs/stable/administration-active-failover.html#reading-from-follower))
 
   - added option `AqlQueryOptions#allowDirtyRead` for `ArangoDatabase#query`.
   - added option `DocumentReadOptions#allowDirtyRead` for `ArangoCollection#getDocument`
@@ -933,7 +1156,10 @@ Added support for sparse indexes
 
 - Initial Release
 
-[unreleased]: https://github.com/arangodb/arangodb-java-driver/compare/5.0.4...HEAD
+[unreleased]: https://github.com/arangodb/arangodb-java-driver/compare/5.0.7...HEAD
+[5.0.7]: https://github.com/arangodb/arangodb-java-driver/compare/5.0.6...5.0.7
+[5.0.6]: https://github.com/arangodb/arangodb-java-driver/compare/5.0.5...5.0.6
+[5.0.5]: https://github.com/arangodb/arangodb-java-driver/compare/5.0.4...5.0.5
 [5.0.4]: https://github.com/arangodb/arangodb-java-driver/compare/5.0.3...5.0.4
 [5.0.3]: https://github.com/arangodb/arangodb-java-driver/compare/5.0.2...5.0.3
 [5.0.2]: https://github.com/arangodb/arangodb-java-driver/compare/5.0.1...5.0.2

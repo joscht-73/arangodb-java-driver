@@ -24,79 +24,96 @@ import com.arangodb.entity.IndexType;
 
 /**
  * @author Mark Vollmary
- *
- * @see <a href="https://docs.arangodb.com/current/HTTP/Indexes/Hash.html#create-hash-index">API Documentation</a>
+ * @see <a href="https://www.arangodb.com/docs/stable/http/indexes-hash.html#create-hash-index">API Documentation</a>
  */
-public class HashIndexOptions {
+public class HashIndexOptions extends IndexOptions<HashIndexOptions> {
 
-	private Iterable<String> fields;
-	private final IndexType type = IndexType.hash;
-	private Boolean unique;
-	private Boolean sparse;
-	private Boolean deduplicate;
+    private Iterable<String> fields;
+    private final IndexType type = IndexType.hash;
+    private Boolean unique;
+    private Boolean sparse;
+    private Boolean deduplicate;
+    private Boolean estimates;
 
-	public HashIndexOptions() {
-		super();
-	}
+    public HashIndexOptions() {
+        super();
+    }
 
-	protected Iterable<String> getFields() {
-		return fields;
-	}
+    @Override
+    protected HashIndexOptions getThis() {
+        return this;
+    }
 
-	/**
-	 * @param fields
-	 *            A list of attribute paths
-	 * @return options
-	 */
-	protected HashIndexOptions fields(final Iterable<String> fields) {
-		this.fields = fields;
-		return this;
-	}
+    protected Iterable<String> getFields() {
+        return fields;
+    }
 
-	protected IndexType getType() {
-		return type;
-	}
+    /**
+     * @param fields A list of attribute paths
+     * @return options
+     */
+    protected HashIndexOptions fields(final Iterable<String> fields) {
+        this.fields = fields;
+        return this;
+    }
 
-	public Boolean getUnique() {
-		return unique;
-	}
+    protected IndexType getType() {
+        return type;
+    }
 
-	/**
-	 * @param unique
-	 *            if true, then create a unique index
-	 * @return options
-	 */
-	public HashIndexOptions unique(final Boolean unique) {
-		this.unique = unique;
-		return this;
-	}
+    public Boolean getUnique() {
+        return unique;
+    }
 
-	public Boolean getSparse() {
-		return sparse;
-	}
+    /**
+     * @param unique if true, then create a unique index
+     * @return options
+     */
+    public HashIndexOptions unique(final Boolean unique) {
+        this.unique = unique;
+        return this;
+    }
 
-	/**
-	 * @param sparse
-	 *            if true, then create a sparse index
-	 * @return options
-	 */
-	public HashIndexOptions sparse(final Boolean sparse) {
-		this.sparse = sparse;
-		return this;
-	}
+    public Boolean getSparse() {
+        return sparse;
+    }
 
-	public Boolean getDeduplicate() {
-		return deduplicate;
-	}
+    /**
+     * @param sparse if true, then create a sparse index
+     * @return options
+     */
+    public HashIndexOptions sparse(final Boolean sparse) {
+        this.sparse = sparse;
+        return this;
+    }
 
-	/**
-	 * @param deduplicate
-	 *            if false, the deduplication of array values is turned off.
-	 * @return options
-	 */
-	public HashIndexOptions deduplicate(final Boolean deduplicate) {
-		this.deduplicate = deduplicate;
-		return this;
-	}
+    public Boolean getDeduplicate() {
+        return deduplicate;
+    }
+
+    /**
+     * @param deduplicate
+     *         if false, the deduplication of array values is turned off.
+     * @return options
+     */
+    public HashIndexOptions deduplicate(final Boolean deduplicate) {
+        this.deduplicate = deduplicate;
+        return this;
+    }
+
+    /**
+     * @param estimates
+     *         This attribute controls whether index selectivity estimates are maintained for the index. Default: {@code
+     *         true}
+     * @since ArangoDB 3.8
+     */
+    public HashIndexOptions estimates(final Boolean estimates) {
+        this.estimates = estimates;
+        return this;
+    }
+
+    public Boolean getEstimates() {
+        return estimates;
+    }
 
 }

@@ -24,44 +24,62 @@ import java.util.Collection;
 
 /**
  * @author Mark Vollmary
- *
- * @see <a href="https://docs.arangodb.com/current/HTTP/Gharial/Management.html#create-a-graph">API Documentation</a>
+ * @see <a href="https://www.arangodb.com/docs/stable/http/gharial-management.html#create-a-graph">API Documentation</a>
  */
 public class GraphEntity implements Entity {
 
-	private String name;
-	/**
-	 * Special case where {@code _key} is used instead of {@code name}.
-	 */
-	private String _key;
-	private Collection<EdgeDefinition> edgeDefinitions;
-	private Collection<String> orphanCollections;
-	private Boolean isSmart;
-	private Integer numberOfShards;
-	private String smartGraphAttribute;
+    private String name;
+    /**
+     * Special case where {@code _key} is used instead of {@code name}.
+     */
+    private String _key;
+    private Collection<EdgeDefinition> edgeDefinitions;
+    private Collection<String> orphanCollections;
+    private Boolean isSmart;
+    private Boolean isDisjoint;
+    private Integer numberOfShards;
+    private String smartGraphAttribute;
+    private ReplicationFactor replicationFactor;
+    private Integer minReplicationFactor;
 
-	public String getName() {
-		return name != null ? name : _key;
-	}
+    public String getName() {
+        return name != null ? name : _key;
+    }
 
-	public Collection<EdgeDefinition> getEdgeDefinitions() {
-		return edgeDefinitions;
-	}
+    public Collection<EdgeDefinition> getEdgeDefinitions() {
+        return edgeDefinitions;
+    }
 
-	public Collection<String> getOrphanCollections() {
-		return orphanCollections;
-	}
+    public Collection<String> getOrphanCollections() {
+        return orphanCollections;
+    }
 
-	public Boolean getIsSmart() {
-		return isSmart;
-	}
+    public Boolean getIsSmart() {
+        return isSmart;
+    }
 
-	public Integer getNumberOfShards() {
-		return numberOfShards;
-	}
+    public Boolean getIsDisjoint() {
+        return isDisjoint;
+    }
 
-	public String getSmartGraphAttribute() {
-		return smartGraphAttribute;
-	}
+    public Integer getNumberOfShards() {
+        return numberOfShards;
+    }
+
+    public Integer getReplicationFactor() {
+        return replicationFactor.getReplicationFactor();
+    }
+
+    public Boolean getSatellite() {
+        return this.replicationFactor.getSatellite();
+    }
+
+    public Integer getMinReplicationFactor() {
+        return minReplicationFactor;
+    }
+
+    public String getSmartGraphAttribute() {
+        return smartGraphAttribute;
+    }
 
 }

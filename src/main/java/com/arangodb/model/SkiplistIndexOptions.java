@@ -24,79 +24,96 @@ import com.arangodb.entity.IndexType;
 
 /**
  * @author Mark Vollmary
- * 
- * @see <a href="https://docs.arangodb.com/current/HTTP/Indexes/Skiplist.html#create-skip-list">API Documentation</a>
+ * @see <a href="https://www.arangodb.com/docs/stable/http/indexes-skiplist.html#create-skip-list">API Documentation</a>
  */
-public class SkiplistIndexOptions {
+public class SkiplistIndexOptions extends IndexOptions<SkiplistIndexOptions> {
 
-	private Iterable<String> fields;
-	private final IndexType type = IndexType.skiplist;
-	private Boolean unique;
-	private Boolean sparse;
-	private Boolean deduplicate;
+    private Iterable<String> fields;
+    private final IndexType type = IndexType.skiplist;
+    private Boolean unique;
+    private Boolean sparse;
+    private Boolean deduplicate;
+    private Boolean estimates;
 
-	public SkiplistIndexOptions() {
-		super();
-	}
+    public SkiplistIndexOptions() {
+        super();
+    }
 
-	protected Iterable<String> getFields() {
-		return fields;
-	}
+    @Override
+    protected SkiplistIndexOptions getThis() {
+        return this;
+    }
 
-	/**
-	 * @param fields
-	 *            A list of attribute paths
-	 * @return options
-	 */
-	protected SkiplistIndexOptions fields(final Iterable<String> fields) {
-		this.fields = fields;
-		return this;
-	}
+    protected Iterable<String> getFields() {
+        return fields;
+    }
 
-	protected IndexType getType() {
-		return type;
-	}
+    /**
+     * @param fields A list of attribute paths
+     * @return options
+     */
+    protected SkiplistIndexOptions fields(final Iterable<String> fields) {
+        this.fields = fields;
+        return this;
+    }
 
-	public Boolean getUnique() {
-		return unique;
-	}
+    protected IndexType getType() {
+        return type;
+    }
 
-	/**
-	 * @param unique
-	 *            if true, then create a unique index
-	 * @return options
-	 */
-	public SkiplistIndexOptions unique(final Boolean unique) {
-		this.unique = unique;
-		return this;
-	}
+    public Boolean getUnique() {
+        return unique;
+    }
 
-	public Boolean getSparse() {
-		return sparse;
-	}
+    /**
+     * @param unique if true, then create a unique index
+     * @return options
+     */
+    public SkiplistIndexOptions unique(final Boolean unique) {
+        this.unique = unique;
+        return this;
+    }
 
-	/**
-	 * @param sparse
-	 *            if true, then create a sparse index
-	 * @return options
-	 */
-	public SkiplistIndexOptions sparse(final Boolean sparse) {
-		this.sparse = sparse;
-		return this;
-	}
+    public Boolean getSparse() {
+        return sparse;
+    }
 
-	public Boolean getDeduplicate() {
-		return deduplicate;
-	}
+    /**
+     * @param sparse if true, then create a sparse index
+     * @return options
+     */
+    public SkiplistIndexOptions sparse(final Boolean sparse) {
+        this.sparse = sparse;
+        return this;
+    }
 
-	/**
-	 * @param deduplicate
-	 *            if false, the deduplication of array values is turned off.
-	 * @return options
-	 */
-	public SkiplistIndexOptions deduplicate(final Boolean deduplicate) {
-		this.deduplicate = deduplicate;
-		return this;
-	}
+    public Boolean getDeduplicate() {
+        return deduplicate;
+    }
+
+    /**
+     * @param deduplicate
+     *         if false, the deduplication of array values is turned off.
+     * @return options
+     */
+    public SkiplistIndexOptions deduplicate(final Boolean deduplicate) {
+        this.deduplicate = deduplicate;
+        return this;
+    }
+
+    /**
+     * @param estimates
+     *         This attribute controls whether index selectivity estimates are maintained for the index. Default: {@code
+     *         true}
+     * @since ArangoDB 3.8
+     */
+    public SkiplistIndexOptions estimates(final Boolean estimates) {
+        this.estimates = estimates;
+        return this;
+    }
+
+    public Boolean getEstimates() {
+        return estimates;
+    }
 
 }

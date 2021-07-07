@@ -20,114 +20,102 @@
 
 package com.arangodb.util;
 
+import com.arangodb.ArangoDBException;
+import com.arangodb.velocypack.VPackSlice;
+
 import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.Map;
 
-import com.arangodb.ArangoDBException;
-import com.arangodb.velocypack.VPackSlice;
-
 /**
  * @author Mark Vollmary
- *
  */
 public interface ArangoSerializer {
 
-	public static class Options {
-		private Type type;
-		private boolean serializeNullValues;
-		private Map<String, Object> additionalFields;
-		private boolean stringAsJson;
+    class Options {
+        private Type type;
+        private boolean serializeNullValues;
+        private Map<String, Object> additionalFields;
+        private boolean stringAsJson;
 
-		public Options() {
-			super();
-			serializeNullValues = false;
-			stringAsJson = false;
-			additionalFields = Collections.<String, Object> emptyMap();
-		}
+        public Options() {
+            super();
+            serializeNullValues = false;
+            stringAsJson = false;
+            additionalFields = Collections.emptyMap();
+        }
 
-		/**
-		 * 
-		 * @param type
-		 *            The source type of the Object.
-		 * @return options
-		 */
-		public Options type(final Type type) {
-			this.type = type;
-			return this;
-		}
+        /**
+         * @param type The source type of the Object.
+         * @return options
+         */
+        public Options type(final Type type) {
+            this.type = type;
+            return this;
+        }
 
-		/**
-		 * 
-		 * @param serializeNullValues
-		 *            Whether or not null values should be excluded from serialization.
-		 * @return options
-		 */
-		public Options serializeNullValues(final boolean serializeNullValues) {
-			this.serializeNullValues = serializeNullValues;
-			return this;
-		}
+        /**
+         * @param serializeNullValues Whether or not null values should be excluded from serialization.
+         * @return options
+         */
+        public Options serializeNullValues(final boolean serializeNullValues) {
+            this.serializeNullValues = serializeNullValues;
+            return this;
+        }
 
-		/**
-		 * 
-		 * @param additionalFields
-		 *            Additional Key/Value pairs to include in the created VelocyPack.
-		 * @return options
-		 */
-		public Options additionalFields(final Map<String, Object> additionalFields) {
-			this.additionalFields = additionalFields;
-			return this;
-		}
+        /**
+         * @param additionalFields Additional Key/Value pairs to include in the created VelocyPack.
+         * @return options
+         */
+        public Options additionalFields(final Map<String, Object> additionalFields) {
+            this.additionalFields = additionalFields;
+            return this;
+        }
 
-		/**
-		 * 
-		 * @param stringAsJson
-		 *            Wheter or not String should be interpreted as json
-		 * @return options
-		 */
-		public Options stringAsJson(final boolean stringAsJson) {
-			this.stringAsJson = stringAsJson;
-			return this;
-		}
+        /**
+         * @param stringAsJson Wheter or not String should be interpreted as json
+         * @return options
+         */
+        public Options stringAsJson(final boolean stringAsJson) {
+            this.stringAsJson = stringAsJson;
+            return this;
+        }
 
-		public Type getType() {
-			return type;
-		}
+        public Type getType() {
+            return type;
+        }
 
-		public boolean isSerializeNullValues() {
-			return serializeNullValues;
-		}
+        public boolean isSerializeNullValues() {
+            return serializeNullValues;
+        }
 
-		public Map<String, Object> getAdditionalFields() {
-			return additionalFields;
-		}
+        public Map<String, Object> getAdditionalFields() {
+            return additionalFields;
+        }
 
-		public boolean isStringAsJson() {
-			return stringAsJson;
-		}
+        public boolean isStringAsJson() {
+            return stringAsJson;
+        }
 
-	}
+    }
 
-	/**
-	 * Serialize a given Object to VelocyPack
-	 * 
-	 * @param entity
-	 *            The Object to serialize. If it is from type String, it will be handled as a JSON.
-	 * @return The serialized VelocyPack
-	 * @throws ArangoDBException
-	 */
-	VPackSlice serialize(final Object entity) throws ArangoDBException;
+    /**
+     * Serialize a given Object to VelocyPack
+     *
+     * @param entity The Object to serialize. If it is from type String, it will be handled as a JSON.
+     * @return The serialized VelocyPack
+     * @throws ArangoDBException
+     */
+    VPackSlice serialize(final Object entity) throws ArangoDBException;
 
-	/**
-	 * Serialize a given Object to VelocyPack
-	 * 
-	 * @param entity
-	 *            The Object to serialize. If it is from type String, it will be handled as a JSON.
-	 * @param options
-	 *            Additional options
-	 * @return the serialized VelocyPack
-	 * @throws ArangoDBException
-	 */
-	VPackSlice serialize(final Object entity, final Options options) throws ArangoDBException;
+    /**
+     * Serialize a given Object to VelocyPack
+     *
+     * @param entity  The Object to serialize. If it is from type String, it will be handled as a JSON.
+     * @param options Additional options
+     * @return the serialized VelocyPack
+     * @throws ArangoDBException
+     */
+    VPackSlice serialize(final Object entity, final Options options) throws ArangoDBException;
 
 }

@@ -24,50 +24,52 @@ import com.arangodb.entity.IndexType;
 
 /**
  * @author Mark Vollmary
- *
- * @see <a href="https://docs.arangodb.com/current/HTTP/Indexes/Geo.html#create-geospatial-index">API Documentation</a>
+ * @see <a href="https://www.arangodb.com/docs/stable/http/indexes-geo.html#create-geo-spatial-index">API Documentation</a>
  */
-public class GeoIndexOptions {
+public class GeoIndexOptions extends IndexOptions<GeoIndexOptions> {
 
-	private Iterable<String> fields;
-	private final IndexType type = IndexType.geo;
-	private Boolean geoJson;
+    private Iterable<String> fields;
+    private final IndexType type = IndexType.geo;
+    private Boolean geoJson;
 
-	public GeoIndexOptions() {
-		super();
-	}
+    public GeoIndexOptions() {
+        super();
+    }
 
-	protected Iterable<String> getFields() {
-		return fields;
-	}
+    @Override
+    protected GeoIndexOptions getThis() {
+        return this;
+    }
 
-	/**
-	 * @param fields
-	 *            A list of attribute paths
-	 * @return options
-	 */
-	protected GeoIndexOptions fields(final Iterable<String> fields) {
-		this.fields = fields;
-		return this;
-	}
+    protected Iterable<String> getFields() {
+        return fields;
+    }
 
-	protected IndexType getType() {
-		return type;
-	}
+    /**
+     * @param fields A list of attribute paths
+     * @return options
+     */
+    protected GeoIndexOptions fields(final Iterable<String> fields) {
+        this.fields = fields;
+        return this;
+    }
 
-	public Boolean getGeoJson() {
-		return geoJson;
-	}
+    protected IndexType getType() {
+        return type;
+    }
 
-	/**
-	 * @param geoJson
-	 *            If a geo-spatial index on a location is constructed and geoJson is true, then the order within the
-	 *            array is longitude followed by latitude. This corresponds to the format described in
-	 * @return options
-	 */
-	public GeoIndexOptions geoJson(final Boolean geoJson) {
-		this.geoJson = geoJson;
-		return this;
-	}
+    public Boolean getGeoJson() {
+        return geoJson;
+    }
+
+    /**
+     * @param geoJson If a geo-spatial index on a location is constructed and geoJson is true, then the order within the
+     *                array is longitude followed by latitude. This corresponds to the format described in
+     * @return options
+     */
+    public GeoIndexOptions geoJson(final Boolean geoJson) {
+        this.geoJson = geoJson;
+        return this;
+    }
 
 }

@@ -20,29 +20,28 @@
 
 package com.arangodb.example.graph;
 
-import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import com.arangodb.ArangoCursor;
+import com.arangodb.ArangoDBException;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.junit.Test;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.is;
 
-import com.arangodb.ArangoCursor;
-import com.arangodb.ArangoDBException;
 
 /**
  * Shortest Path in AQL
- * 
- * @see <a href="https://docs.arangodb.com/current/AQL/Graphs/ShortestPath.html">Shortest Path in AQL</a>
- * 
- * @author a-brandt
  *
+ * @author a-brandt
+ * @see <a href="https://www.arangodb.com/docs/stable/aql/graphs-shortest-path.html">Shortest Path in AQL</a>
  */
 public class ShortestPathInAQLExample extends BaseGraphTest {
 
+	@SuppressWarnings({"WeakerAccess", "unused"})
 	public static class Pair {
 
 		private String vertex;
@@ -75,7 +74,7 @@ public class ShortestPathInAQLExample extends BaseGraphTest {
 		assertThat(collection, hasItems("A", "B", "C", "D"));
 
 		queryString = "WITH circles FOR v, e IN OUTBOUND SHORTEST_PATH 'circles/A' TO 'circles/D' edges RETURN {'vertex': v._key, 'edge': e._key}";
-		cursor = db.query(queryString, null, null, Pair.class);
+		db.query(queryString, null, null, Pair.class);
 		assertThat(collection.size(), is(4));
 		assertThat(collection, hasItems("A", "B", "C", "D"));
 	}
@@ -89,14 +88,14 @@ public class ShortestPathInAQLExample extends BaseGraphTest {
 		assertThat(collection, hasItems("A", "B", "C", "D"));
 
 		queryString = "FOR a IN circles FILTER a._key == 'A' FOR d IN circles FILTER d._key == 'D' FOR v, e IN OUTBOUND SHORTEST_PATH a TO d edges RETURN {'vertex': v._key, 'edge': e._key}";
-		cursor = db.query(queryString, null, null, Pair.class);
+		db.query(queryString, null, null, Pair.class);
 		assertThat(collection.size(), is(4));
 		assertThat(collection, hasItems("A", "B", "C", "D"));
 	}
 
-	protected Collection<String> toVertexCollection(final ArangoCursor<Pair> cursor) {
-		final List<String> result = new ArrayList<String>();
-		for (; cursor.hasNext();) {
+	private Collection<String> toVertexCollection(final ArangoCursor<Pair> cursor) {
+		final List<String> result = new ArrayList<>();
+		for (; cursor.hasNext(); ) {
 			final Pair pair = cursor.next();
 			result.add(pair.getVertex());
 		}

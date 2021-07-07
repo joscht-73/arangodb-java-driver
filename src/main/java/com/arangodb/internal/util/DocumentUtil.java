@@ -20,45 +20,44 @@
 
 package com.arangodb.internal.util;
 
-import java.util.regex.Pattern;
-
 import com.arangodb.ArangoDBException;
+
+import java.util.regex.Pattern;
 
 /**
  * @author Mark Vollmary
- *
  */
 public final class DocumentUtil {
 
-	private static final String SLASH = "/";
-	public static final String REGEX_KEY = "[^/]+";
-	public static final String REGEX_ID = "[^/]+/[^/]+";
+    private static final String SLASH = "/";
+    public static final String REGEX_KEY = "[^/]+";
+    public static final String REGEX_ID = "[^/]+/[^/]+";
 
-	private DocumentUtil() {
-		super();
-	}
+    private DocumentUtil() {
+        super();
+    }
 
-	public static void validateIndexId(final String id) {
-		validateName("index id", REGEX_ID, id);
-	}
+    public static void validateIndexId(final String id) {
+        validateName("index id", REGEX_ID, id);
+    }
 
-	public static void validateDocumentKey(final String key) throws ArangoDBException {
-		validateName("document key", REGEX_KEY, key);
-	}
+    public static void validateDocumentKey(final String key) throws ArangoDBException {
+        validateName("document key", REGEX_KEY, key);
+    }
 
-	public static void validateDocumentId(final String id) throws ArangoDBException {
-		validateName("document id", REGEX_ID, id);
-	}
+    public static void validateDocumentId(final String id) throws ArangoDBException {
+        validateName("document id", REGEX_ID, id);
+    }
 
-	public static String createDocumentHandle(final String collection, final String key) {
-		validateDocumentKey(key);
-		return new StringBuffer().append(collection).append(SLASH).append(key).toString();
-	}
+    public static String createDocumentHandle(final String collection, final String key) {
+        validateDocumentKey(key);
+        return collection + SLASH + key;
+    }
 
-	private static void validateName(final String type, final String regex, final CharSequence name)
-			throws ArangoDBException {
-		if (!Pattern.matches(regex, name)) {
-			throw new ArangoDBException(String.format("%s %s is not valid.", type, name));
-		}
-	}
+    private static void validateName(final String type, final String regex, final CharSequence name)
+            throws ArangoDBException {
+        if (!Pattern.matches(regex, name)) {
+            throw new ArangoDBException(String.format("%s %s is not valid.", type, name));
+        }
+    }
 }

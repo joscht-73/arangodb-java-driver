@@ -24,106 +24,134 @@ import java.util.Collection;
 
 /**
  * @author Mark Vollmary
- *
- * @see <a href= "https://docs.arangodb.com/current/HTTP/Collection/Getting.html#read-properties-of-a-collection">API
- *      Documentation</a>
+ * @see <a href= "https://www.arangodb.com/docs/stable/http/collection-getting.html#read-properties-of-a-collection">API
+ * Documentation</a>
  */
 public class CollectionPropertiesEntity extends CollectionEntity {
 
-	private Boolean doCompact;
-	private Long journalSize;
-	private Integer indexBuckets;
-	private KeyOptions keyOptions;
-	private Long count;
-	private Integer numberOfShards;
-	private Collection<String> shardKeys;
-	private final ReplicationFactor replicationFactor;
+    private Boolean doCompact;
+    private Long journalSize;
+    private Integer indexBuckets;
+    private KeyOptions keyOptions;
+    private Long count;
+    private Integer numberOfShards;
+    private Collection<String> shardKeys;
+    private final ReplicationFactor replicationFactor;
+    private final MinReplicationFactor minReplicationFactor;
 
-	public CollectionPropertiesEntity() {
-		super();
-		replicationFactor = new ReplicationFactor();
-	}
+    private String shardingStrategy; // cluster option
+    private String smartJoinAttribute; // enterprise option
 
-	public Boolean getDoCompact() {
-		return doCompact;
-	}
+    public CollectionPropertiesEntity() {
+        super();
+        replicationFactor = new ReplicationFactor();
+        minReplicationFactor = new MinReplicationFactor();
+    }
 
-	public void setDoCompact(final Boolean doCompact) {
-		this.doCompact = doCompact;
-	}
+    public Boolean getDoCompact() {
+        return doCompact;
+    }
 
-	public Long getJournalSize() {
-		return journalSize;
-	}
+    public void setDoCompact(final Boolean doCompact) {
+        this.doCompact = doCompact;
+    }
 
-	public void setJournalSize(final Long journalSize) {
-		this.journalSize = journalSize;
-	}
+    public Long getJournalSize() {
+        return journalSize;
+    }
 
-	public Integer getIndexBuckets() {
-		return indexBuckets;
-	}
+    public void setJournalSize(final Long journalSize) {
+        this.journalSize = journalSize;
+    }
 
-	public void setIndexBuckets(final Integer indexBuckets) {
-		this.indexBuckets = indexBuckets;
-	}
+    public Integer getIndexBuckets() {
+        return indexBuckets;
+    }
 
-	public KeyOptions getKeyOptions() {
-		return keyOptions;
-	}
+    public void setIndexBuckets(final Integer indexBuckets) {
+        this.indexBuckets = indexBuckets;
+    }
 
-	public void setKeyOptions(final KeyOptions keyOptions) {
-		this.keyOptions = keyOptions;
-	}
+    public KeyOptions getKeyOptions() {
+        return keyOptions;
+    }
 
-	public Long getCount() {
-		return count;
-	}
+    public void setKeyOptions(final KeyOptions keyOptions) {
+        this.keyOptions = keyOptions;
+    }
 
-	public void setCount(final Long count) {
-		this.count = count;
-	}
+    public Long getCount() {
+        return count;
+    }
 
-	/**
-	 * @return contains the names of document attributes that are used to determine the target shard for documents. Only
-	 *         in a cluster setup
-	 */
-	public Integer getNumberOfShards() {
-		return numberOfShards;
-	}
+    public void setCount(final Long count) {
+        this.count = count;
+    }
 
-	public void setNumberOfShards(final Integer numberOfShards) {
-		this.numberOfShards = numberOfShards;
-	}
+    /**
+     * @return the number of shards of the collection. Only in a cluster setup (else returning null).
+     */
+    public Integer getNumberOfShards() {
+        return numberOfShards;
+    }
 
-	/**
-	 * @return the number of shards of the collection. Only in a cluster setup.
-	 */
-	public Collection<String> getShardKeys() {
-		return shardKeys;
-	}
+    public void setNumberOfShards(final Integer numberOfShards) {
+        this.numberOfShards = numberOfShards;
+    }
 
-	public void setShardKeys(final Collection<String> shardKeys) {
-		this.shardKeys = shardKeys;
-	}
+    /**
+     * @return the names of document attributes that are used to determine the target shard for documents.
+     * Only in a cluster setup (else returning null).
+     */
+    public Collection<String> getShardKeys() {
+        return shardKeys;
+    }
 
-	public Integer getReplicationFactor() {
-		return replicationFactor.getReplicationFactor();
-	}
+    public void setShardKeys(final Collection<String> shardKeys) {
+        this.shardKeys = shardKeys;
+    }
 
-	public void setReplicationFactor(final Integer replicationFactor) {
-		this.replicationFactor.setReplicationFactor(replicationFactor);
-	}
+    public Integer getReplicationFactor() {
+        return replicationFactor.getReplicationFactor();
+    }
 
-	/**
-	 * @return whether the collection is a satellite collection. Only in a enterprise cluster setup.
-	 */
-	public Boolean getSatellite() {
-		return this.replicationFactor.getSatellite();
-	}
+    public void setReplicationFactor(final Integer replicationFactor) {
+        this.replicationFactor.setReplicationFactor(replicationFactor);
+    }
 
-	public void setSatellite(final Boolean satellite) {
-		this.replicationFactor.setSatellite(satellite);
-	}
+    public Integer getMinReplicationFactor() {
+        return minReplicationFactor.getMinReplicationFactor();
+    }
+
+    public void setMinReplicationFactor(final Integer minReplicationFactor) {
+        this.minReplicationFactor.setMinReplicationFactor(minReplicationFactor);
+    }
+
+    /**
+     * @return whether the collection is a satellite collection. Only in an enterprise cluster setup (else returning null).
+     */
+    public Boolean getSatellite() {
+        return this.replicationFactor.getSatellite();
+    }
+
+    public void setSatellite(final Boolean satellite) {
+        this.replicationFactor.setSatellite(satellite);
+    }
+
+    public String getShardingStrategy() {
+        return shardingStrategy;
+    }
+
+    public void setShardingStrategy(String shardingStrategy) {
+        this.shardingStrategy = shardingStrategy;
+    }
+
+    public String getSmartJoinAttribute() {
+        return smartJoinAttribute;
+    }
+
+    public void setSmartJoinAttribute(String smartJoinAttribute) {
+        this.smartJoinAttribute = smartJoinAttribute;
+    }
 
 }

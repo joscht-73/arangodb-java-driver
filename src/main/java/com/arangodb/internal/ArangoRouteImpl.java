@@ -20,86 +20,81 @@
 
 package com.arangodb.internal;
 
-import java.util.Map;
-
 import com.arangodb.ArangoDBException;
 import com.arangodb.ArangoRoute;
-import com.arangodb.internal.ArangoExecutor.ResponseDeserializer;
-import com.arangodb.velocypack.exception.VPackException;
 import com.arangodb.velocystream.RequestType;
 import com.arangodb.velocystream.Response;
 
+import java.util.Map;
+
 /**
  * @author Mark Vollmary
- *
  */
 public class ArangoRouteImpl extends InternalArangoRoute<ArangoDBImpl, ArangoDatabaseImpl, ArangoExecutorSync>
-		implements ArangoRoute {
+        implements ArangoRoute {
 
-	protected ArangoRouteImpl(final ArangoDatabaseImpl db, final String path, final Map<String, String> headerParam) {
-		super(db, path, headerParam);
-	}
+    protected ArangoRouteImpl(final ArangoDatabaseImpl db, final String path, final Map<String, String> headerParam) {
+        super(db, path, headerParam);
+    }
 
-	@Override
-	public ArangoRoute route(final String... path) {
-		return new ArangoRouteImpl(db, createPath(this.path, createPath(path)), headerParam);
-	}
+    @Override
+    public ArangoRoute route(final String... path) {
+        final String[] fullPath = new String[path.length + 1];
+        fullPath[0] = this.path;
+        System.arraycopy(path, 0, fullPath, 1, path.length);
+        return new ArangoRouteImpl(db, String.join("/", fullPath), headerParam);
+    }
 
-	@Override
-	public ArangoRoute withHeader(final String key, final Object value) {
-		_withHeader(key, value);
-		return this;
-	}
+    @Override
+    public ArangoRoute withHeader(final String key, final Object value) {
+        _withHeader(key, value);
+        return this;
+    }
 
-	@Override
-	public ArangoRoute withQueryParam(final String key, final Object value) {
-		_withQueryParam(key, value);
-		return this;
-	}
+    @Override
+    public ArangoRoute withQueryParam(final String key, final Object value) {
+        _withQueryParam(key, value);
+        return this;
+    }
 
-	@Override
-	public ArangoRoute withBody(final Object body) {
-		_withBody(body);
-		return this;
-	}
+    @Override
+    public ArangoRoute withBody(final Object body) {
+        _withBody(body);
+        return this;
+    }
 
-	private Response request(final RequestType requestType) {
-		return executor.execute(createRequest(requestType), new ResponseDeserializer<Response>() {
-			@Override
-			public Response deserialize(final Response response) throws VPackException {
-				return response;
-			}
-		});
-	}
+    private Response request(final RequestType requestType) {
+        return executor.execute(createRequest(requestType), response -> response);
+    }
 
-	@Override
-	public Response delete() throws ArangoDBException {
-		return request(RequestType.DELETE);
-	}
+    @Override
+    public Response delete() throws ArangoDBException {
+        return request(RequestType.DELETE);
+    }
 
-	@Override
-	public Response get() throws ArangoDBException {
-		return request(RequestType.GET);
-	}
+    @Override
+    public Response get() throws ArangoDBException {
+        return request(RequestType.GET);
+    }
 
-	@Override
-	public Response head() throws ArangoDBException {
-		return request(RequestType.HEAD);
-	}
+    @Override
+    public Response head() throws ArangoDBException {
+        return request(RequestType.HEAD);
+    }
 
-	@Override
-	public Response patch() throws ArangoDBException {
-		return request(RequestType.PATCH);
-	}
+    @Override
+    public Response patch() throws ArangoDBException {
+        return request(RequestType.PATCH);
+    }
 
-	@Override
-	public Response post() throws ArangoDBException {
-		return request(RequestType.POST);
-	}
+    @Override
+    public Response post() throws ArangoDBException {
+        return request(RequestType.POST);
+    }
 
-	@Override
-	public Response put() throws ArangoDBException {
-		return request(RequestType.PUT);
-	}
+    @Override
+    public Response put() throws ArangoDBException {
+        return request(RequestType.PUT);
+    }
 
 }

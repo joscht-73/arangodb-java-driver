@@ -20,57 +20,76 @@
 
 package com.arangodb.internal.net;
 
+import com.arangodb.internal.velocystream.internal.VstConnection;
+import com.arangodb.internal.velocystream.internal.VstConnectionSync;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author Mark Vollmary
- *
  */
 public class ConnectionPoolImpl implements ConnectionPool {
 
-	private final HostDescription host;
-	private final int maxConnections;
-	private final List<Connection> connections;
-	private int current;
-	private final ConnectionFactory factory;
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionPoolImpl.class);
 
-	public ConnectionPoolImpl(final HostDescription host, final Integer maxConnections,
-		final ConnectionFactory factory) {
-		super();
-		this.host = host;
-		this.maxConnections = maxConnections;
-		this.factory = factory;
-		connections = new ArrayList<Connection>();
-		current = 0;
-	}
+    private final HostDescription host;
+    private final int maxConnections;
+    private final List<Connection> connections;
+    private int current;
+    private final ConnectionFactory factory;
 
-	@Override
-	public Connection createConnection(final HostDescription host) {
-		return factory.create(host);
-	}
+    public ConnectionPoolImpl(final HostDescription host, final Integer maxConnections,
+                              final ConnectionFactory factory) {
+        super();
+        this.host = host;
+        this.maxConnections = maxConnections;
+        this.factory = factory;
+        connections = new ArrayList<>();
+        current = 0;
+    }
 
-	@Override
-	public synchronized Connection connection() {
-		final Connection connection;
-		if (connections.size() < maxConnections) {
-			connection = createConnection(host);
-			connections.add(connection);
-			current++;
-		} else {
-			final int index = (current++) % connections.size();
-			connection = connections.get(index);
-		}
-		return connection;
-	}
+    @Override
+    public Connection createConnection(final HostDescription host) {
+        return factory.create(host);
+    }
 
-	@Override
-	public void close() throws IOException {
-		for (final Connection connection : connections) {
-			connection.close();
-		}
-		connections.clear();
-	}
+    @Override
+    public synchronized Connection connection() {
+
+        final Connection connection;
+
+        if (connections.size() < maxConnections) {
+            connection = createConnection(host);
+            connections.add(connection);
+            current++;
+        } else {
+            final int index = Math.floorMod(current++, connections.size());
+            connection = connections.get(index);
+        }
+
+        if (connection instanceof VstConnectionSync) {
+            LOGGER.debug("Return Connection " + ((VstConnection) connection).getConnectionName());
+        }
+
+        return connection;
+    }
+
+    @Override
+    public synchronized void close() throws IOException {
+        for (final Connection connection : connections) {
+            connection.close();
+        }
+        connections.clear();
+    }
+
+    @Override
+    public String toString() {
+        return "ConnectionPoolImpl [host=" + host + ", maxConnections=" + maxConnections + ", connections="
+                + connections.size() + ", current=" + current + ", factory=" + factory.getClass().getSimpleName() + "]";
+    }
 
 }

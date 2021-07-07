@@ -24,65 +24,83 @@ import com.arangodb.entity.IndexType;
 
 /**
  * @author Mark Vollmary
- * 
- * @see <a href="https://docs.arangodb.com/current/HTTP/Indexes/Persistent.html#create-a-persistent-index">API
- *      Documentation</a>
+ * @see <a href="https://www.arangodb.com/docs/stable/http/indexes-persistent.html#create-a-persistent-index">API
+ * Documentation</a>
  */
-public class PersistentIndexOptions {
+public class PersistentIndexOptions extends IndexOptions<PersistentIndexOptions> {
 
-	private Iterable<String> fields;
-	protected IndexType type = IndexType.persistent;
-	private Boolean unique;
-	private Boolean sparse;
+    private Iterable<String> fields;
+    protected final IndexType type = IndexType.persistent;
+    private Boolean unique;
+    private Boolean sparse;
+    private Boolean estimates;
 
-	public PersistentIndexOptions() {
-		super();
-	}
+    public PersistentIndexOptions() {
+        super();
+    }
 
-	protected Iterable<String> getFields() {
-		return fields;
-	}
+    @Override
+    protected PersistentIndexOptions getThis() {
+        return this;
+    }
 
-	/**
-	 * @param fields
-	 *            A list of attribute paths
-	 * @return options
-	 */
-	protected PersistentIndexOptions fields(final Iterable<String> fields) {
-		this.fields = fields;
-		return this;
-	}
+    protected Iterable<String> getFields() {
+        return fields;
+    }
 
-	protected IndexType getType() {
-		return type;
-	}
+    /**
+     * @param fields A list of attribute paths
+     * @return options
+     */
+    protected PersistentIndexOptions fields(final Iterable<String> fields) {
+        this.fields = fields;
+        return this;
+    }
 
-	public Boolean getUnique() {
-		return unique;
-	}
+    protected IndexType getType() {
+        return type;
+    }
 
-	/**
-	 * @param unique
-	 *            if true, then create a unique index
-	 * @return options
-	 */
-	public PersistentIndexOptions unique(final Boolean unique) {
-		this.unique = unique;
-		return this;
-	}
+    public Boolean getUnique() {
+        return unique;
+    }
 
-	public Boolean getSparse() {
-		return sparse;
-	}
+    /**
+     * @param unique if true, then create a unique index
+     * @return options
+     */
+    public PersistentIndexOptions unique(final Boolean unique) {
+        this.unique = unique;
+        return this;
+    }
 
-	/**
-	 * @param sparse
-	 *            if true, then create a sparse index
-	 * @return options
-	 */
-	public PersistentIndexOptions sparse(final Boolean sparse) {
-		this.sparse = sparse;
-		return this;
-	}
+    public Boolean getSparse() {
+        return sparse;
+    }
+
+    /**
+     * @param sparse
+     *         if true, then create a sparse index
+     * @return options
+     */
+    public PersistentIndexOptions sparse(final Boolean sparse) {
+        this.sparse = sparse;
+        return this;
+    }
+
+    /**
+     * @param estimates
+     *         This attribute controls whether index selectivity estimates are maintained for the index. Default: {@code
+     *         true}
+     * @since ArangoDB 3.8
+     */
+    public PersistentIndexOptions estimates(final Boolean estimates) {
+        this.estimates = estimates;
+        return this;
+    }
+
+    public Boolean getEstimates() {
+        return estimates;
+    }
 
 }

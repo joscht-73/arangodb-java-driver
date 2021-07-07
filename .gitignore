@@ -4,3 +4,7 @@
 /target
 /.idea
 /*.iml
+/bin
+
+/docker/jwtHeader
+/docker/jwtSecret

@@ -26,50 +26,101 @@ import java.util.Collection;
 
 /**
  * @author Mark Vollmary
- *
+ * @author Heiko Kernbach
+ * @author Michele Rastelli
+ * @see <a href="https://www.arangodb.com/docs/stable/http/views-arangosearch.html">API Documentation</a>
  */
 public class ArangoSearchProperties {
 
-	private Long consolidationIntervalMsec;
-	private Long cleanupIntervalStep;
-	private ConsolidationPolicy consolidationPolicy;
-	private final Collection<CollectionLink> links;
+    private Long consolidationIntervalMsec;
+    private Long commitIntervalMsec;
+    private Long cleanupIntervalStep;
+    private ConsolidationPolicy consolidationPolicy;
+    private final Collection<PrimarySort> primarySorts;
+    private final Collection<CollectionLink> links;
+    private ArangoSearchCompression primarySortCompression;
+    private final Collection<StoredValue> storedValues;
 
-	public ArangoSearchProperties() {
-		super();
-		links = new ArrayList<CollectionLink>();
-	}
+    public ArangoSearchProperties() {
+        super();
+        links = new ArrayList<>();
+        primarySorts = new ArrayList<>();
+        storedValues = new ArrayList<>();
+    }
 
-	public Long getConsolidationIntervalMsec() {
-		return consolidationIntervalMsec;
-	}
+    public Long getCommitIntervalMsec() {
+        return commitIntervalMsec;
+    }
 
-	public void setConsolidationIntervalMsec(final Long consolidationIntervalMsec) {
-		this.consolidationIntervalMsec = consolidationIntervalMsec;
-	}
+    public void setCommitIntervalMsec(final Long commitIntervalMsec) {
+        this.commitIntervalMsec = commitIntervalMsec;
+    }
 
-	public Long getCleanupIntervalStep() {
-		return cleanupIntervalStep;
-	}
+    public Long getConsolidationIntervalMsec() {
+        return consolidationIntervalMsec;
+    }
 
-	public void setCleanupIntervalStep(final Long cleanupIntervalStep) {
-		this.cleanupIntervalStep = cleanupIntervalStep;
-	}
+    public void setConsolidationIntervalMsec(final Long consolidationIntervalMsec) {
+        this.consolidationIntervalMsec = consolidationIntervalMsec;
+    }
 
-	public ConsolidationPolicy getConsolidationPolicy() {
-		return consolidationPolicy;
-	}
+    public Long getCleanupIntervalStep() {
+        return cleanupIntervalStep;
+    }
 
-	public void setConsolidationPolicy(final ConsolidationPolicy consolidationPolicy) {
-		this.consolidationPolicy = consolidationPolicy;
-	}
+    public void setCleanupIntervalStep(final Long cleanupIntervalStep) {
+        this.cleanupIntervalStep = cleanupIntervalStep;
+    }
 
-	public Collection<CollectionLink> getLinks() {
-		return links;
-	}
+    public ConsolidationPolicy getConsolidationPolicy() {
+        return consolidationPolicy;
+    }
 
-	public void addLink(final CollectionLink... links) {
-		this.links.addAll(Arrays.asList(links));
-	}
+    public void setConsolidationPolicy(final ConsolidationPolicy consolidationPolicy) {
+        this.consolidationPolicy = consolidationPolicy;
+    }
+
+    public Collection<CollectionLink> getLinks() {
+        return links;
+    }
+
+    public void addLink(final CollectionLink... links) {
+        this.links.addAll(Arrays.asList(links));
+    }
+
+    public Collection<PrimarySort> getPrimarySort() {
+        return primarySorts;
+    }
+
+    public void addPrimarySort(final PrimarySort... primarySorts) {
+        this.primarySorts.addAll(Arrays.asList(primarySorts));
+    }
+
+    /**
+     * @return Defines how to compress the primary sort data (introduced in v3.7.0). ArangoDB v3.5 and v3.6 always
+     * compress the index using LZ4.
+     * @since ArangoDB 3.7
+     */
+    public ArangoSearchCompression getPrimarySortCompression() {
+        return primarySortCompression;
+    }
+
+    public void setPrimarySortCompression(ArangoSearchCompression primarySortCompression) {
+        this.primarySortCompression = primarySortCompression;
+    }
+
+    /**
+     * @return An array of objects to describe which document attributes to store in the View index. It can then cover
+     * search queries, which means the data can be taken from the index directly and accessing the storage engine can be
+     * avoided.
+     * @since ArangoDB 3.7
+     */
+    public Collection<StoredValue> getStoredValues() {
+        return storedValues;
+    }
+
+    public void addStoredValues(final StoredValue... storedValues) {
+        this.storedValues.addAll(Arrays.asList(storedValues));
+    }
 
 }

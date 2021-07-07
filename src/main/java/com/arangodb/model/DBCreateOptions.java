@@ -20,30 +20,58 @@
 
 package com.arangodb.model;
 
+import java.util.Collection;
+
 /**
  * @author Mark Vollmary
- *
  */
 public class DBCreateOptions {
 
-	private String name;
+    private Collection<DatabaseUsersOptions> users;
+    private String name;
+    private DatabaseOptions options;
 
-	public DBCreateOptions() {
-		super();
-	}
+    public DBCreateOptions() {
+        super();
+    }
 
-	public String getName() {
-		return name;
-	}
+    public Collection<DatabaseUsersOptions> getUsers() {
+        return users;
+    }
 
-	/**
-	 * @param name
-	 *            Has to contain a valid database name
-	 * @return options
-	 */
-	protected DBCreateOptions name(final String name) {
-		this.name = name;
-		return this;
-	}
+    /**
+     * @param users array of user objects to initially create for the new database.
+     *              User information will not be changed for users that already exist.
+     *              If users is not specified or does not contain any users, a default user
+     *              root will be created with an empty string password. This ensures that the
+     *              new database will be accessible after it is created.
+     * @return options
+     */
+    public DBCreateOptions users(final Collection<DatabaseUsersOptions> users) {
+        this.users = users;
+        return this;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * @param name Has to contain a valid database name
+     * @return options
+     */
+    public DBCreateOptions name(final String name) {
+        this.name = name;
+        return this;
+    }
+
+    public DatabaseOptions getOptions() {
+        return options;
+    }
+
+    public DBCreateOptions options(DatabaseOptions options) {
+        this.options = options;
+        return this;
+    }
 
 }

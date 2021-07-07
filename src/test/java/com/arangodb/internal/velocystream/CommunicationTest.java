@@ -20,167 +20,95 @@
 
 package com.arangodb.internal.velocystream;
 
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import com.arangodb.ArangoDB;
+import com.arangodb.ArangoDatabase;
+import com.arangodb.entity.ArangoDBVersion;
+import org.junit.Test;
 
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import org.junit.Test;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 
-import com.arangodb.ArangoDB;
-import com.arangodb.ArangoDBException;
-import com.arangodb.ArangoDatabase;
-import com.arangodb.entity.ArangoDBVersion;
 
 /**
  * @author Mark Vollmary
- *
  */
 public class CommunicationTest {
 
-	private static final String FAST = "fast";
-	private static final String SLOW = "slow";
+    private static final String FAST = "fast";
+    private static final String SLOW = "slow";
 
-	@Test
-	public void chunkSizeSmall() {
-		final ArangoDB arangoDB = new ArangoDB.Builder().chunksize(20).build();
-		final ArangoDBVersion version = arangoDB.getVersion();
-		assertThat(version, is(notNullValue()));
-	}
+    @Test
+    public void chunkSizeSmall() {
+        final ArangoDB arangoDB = new ArangoDB.Builder().chunksize(20).build();
+        final ArangoDBVersion version = arangoDB.getVersion();
+        assertThat(version, is(notNullValue()));
+    }
 
-	@Test
-	public void multiThread() throws Exception {
-		final ArangoDB arangoDB = new ArangoDB.Builder().build();
-		arangoDB.getVersion();// authentication
+    @Test
+    public void multiThread() throws Exception {
+        final ArangoDB arangoDB = new ArangoDB.Builder().build();
+        arangoDB.getUsers(); // authentication and active-failover connection redirect to master
 
-		final Collection<String> result = new ConcurrentLinkedQueue<String>();
-		final Thread fast = new Thread() {
-			@Override
-			public void run() {
-				try {
-					arangoDB.db().query("return sleep(1)", null, null, null);
-					result.add(FAST);
-				} catch (final ArangoDBException e) {
-				}
-			}
-		};
-		final Thread slow = new Thread() {
-			@Override
-			public void run() {
-				try {
-					arangoDB.db().query("return sleep(4)", null, null, null);
-					result.add(SLOW);
-				} catch (final ArangoDBException e) {
-				}
-			}
-		};
-		slow.start();
-		Thread.sleep(1000);
-		fast.start();
+        final Collection<String> result = new ConcurrentLinkedQueue<>();
+        final Thread fast = new Thread(() -> {
+            arangoDB.db().query("return sleep(0.1)", null, null, null);
+            result.add(FAST);
+        });
+        final Thread slow = new Thread(() -> {
+            arangoDB.db().query("return sleep(0.5)", null, null, null);
+            result.add(SLOW);
+        });
+        slow.start();
+        fast.start();
 
-		slow.join();
-		fast.join();
+        slow.join();
+        fast.join();
 
-		assertThat(result.size(), is(2));
-		final Iterator<String> iterator = result.iterator();
-		assertThat(iterator.next(), is(FAST));
-		assertThat(iterator.next(), is(SLOW));
-	}
+        assertThat(result.size(), is(2));
+        final Iterator<String> iterator = result.iterator();
+        assertThat(iterator.next(), is(FAST));
+        assertThat(iterator.next(), is(SLOW));
+    }
 
-	@Test
-	public void multiThreadSameDatabases() throws Exception {
-		final ArangoDB arangoDB = new ArangoDB.Builder().build();
-		arangoDB.getVersion();// authentication
+    @Test
+    public void multiThreadSameDatabases() throws Exception {
+        final ArangoDB arangoDB = new ArangoDB.Builder().build();
+        arangoDB.getUsers(); // authentication and active-failover connection redirect to master
 
-		final ArangoDatabase db = arangoDB.db();
+        final ArangoDatabase db = arangoDB.db();
 
-		final Collection<String> result = new ConcurrentLinkedQueue<String>();
-		final Thread t1 = new Thread() {
-			@Override
-			public void run() {
-				try {
-					db.query("return sleep(1)", null, null, null);
-					result.add("1");
-				} catch (final ArangoDBException e) {
-					e.printStackTrace(System.err);
-				}
-			}
-		};
-		final Thread t2 = new Thread() {
-			@Override
-			public void run() {
-				try {
-					db.query("return sleep(1)", null, null, null);
-					result.add("1");
-				} catch (final ArangoDBException e) {
-					e.printStackTrace(System.err);
-				}
-			}
-		};
-		t2.start();
-		t1.start();
-		t2.join();
-		t1.join();
-		assertThat(result.size(), is(2));
-	}
+        final Collection<String> result = new ConcurrentLinkedQueue<>();
+        final Thread t1 = new Thread(() -> {
+            db.query("return sleep(0.1)", null, null, null);
+            result.add("1");
+        });
+        final Thread t2 = new Thread(() -> {
+            db.query("return sleep(0.1)", null, null, null);
+            result.add("1");
+        });
+        t2.start();
+        t1.start();
+        t2.join();
+        t1.join();
+        assertThat(result.size(), is(2));
+    }
 
-	@Test
-	public void multiThreadMultiDatabases() throws Exception {
-		final ArangoDB arangoDB = new ArangoDB.Builder().build();
-		arangoDB.getVersion();// authentication
+    @Test
+    public void minOneConnection() {
+        final ArangoDB arangoDB = new ArangoDB.Builder().maxConnections(0).build();
+        final ArangoDBVersion version = arangoDB.getVersion();
+        assertThat(version, is(notNullValue()));
+    }
 
-		try {
-			arangoDB.createDatabase("db1");
-			arangoDB.createDatabase("db2");
-			final ArangoDatabase db1 = arangoDB.db("db1");
-			final ArangoDatabase db2 = arangoDB.db("db2");
-
-			final Collection<String> result = new ConcurrentLinkedQueue<String>();
-			final Thread t1 = new Thread() {
-				@Override
-				public void run() {
-					try {
-						db1.query("return sleep(1)", null, null, null);
-						result.add("1");
-					} catch (final ArangoDBException e) {
-					}
-				}
-			};
-			final Thread t2 = new Thread() {
-				@Override
-				public void run() {
-					try {
-						db2.query("return sleep(1)", null, null, null);
-						result.add("1");
-					} catch (final ArangoDBException e) {
-					}
-				}
-			};
-			t2.start();
-			t1.start();
-			t2.join();
-			t1.join();
-			assertThat(result.size(), is(2));
-		} finally {
-			arangoDB.db("db1").drop();
-			arangoDB.db("db2").drop();
-		}
-	}
-
-	@Test
-	public void minOneConnection() {
-		final ArangoDB arangoDB = new ArangoDB.Builder().maxConnections(0).build();
-		final ArangoDBVersion version = arangoDB.getVersion();
-		assertThat(version, is(notNullValue()));
-	}
-
-	@Test
-	public void defaultMaxConnection() {
-		final ArangoDB arangoDB = new ArangoDB.Builder().maxConnections(null).build();
-		final ArangoDBVersion version = arangoDB.getVersion();
-		assertThat(version, is(notNullValue()));
-	}
+    @Test
+    public void defaultMaxConnection() {
+        final ArangoDB arangoDB = new ArangoDB.Builder().maxConnections(null).build();
+        final ArangoDBVersion version = arangoDB.getVersion();
+        assertThat(version, is(notNullValue()));
+    }
 }
